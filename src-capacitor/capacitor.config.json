@@ -1,0 +1,5 @@
+{
+  "appId": "com.misva.app",
+  "appName": "sva",
+  "webDir": "dist/spa"
+}

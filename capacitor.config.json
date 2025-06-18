@@ -1,0 +1,27 @@
+
+{
+  "appId": "com.misva.app",
+  "appName": "sva",
+  "webDir": "dist/spa",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": ["*"]
+  },
+   "plugins": {
+     "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    },
+    "FirebaseMessaging": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    },
+    "Filesystem": {
+      "androidPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "android": {
+    "useLegacyStorage": true
+  }
+}
