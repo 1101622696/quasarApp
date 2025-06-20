@@ -1,102 +1,113 @@
 <template>
   <div class="q-mt-sm">
-    <q-btn-dropdown v-if="mostrarOpciones" flat dense icon="more_vert" color="grey-8">
-      <q-list>
-        <q-item clickable v-close-popup @click="abrirDialogoAprobacion" 
-                v-if="esJefePiloto && estadoProceso === 'Pendiente de aprobación' && !registroCompletado">
-          <q-item-section>
-            <q-item-label>Aprobar</q-item-label>
-          </q-item-section>
-        </q-item>
+<q-btn-dropdown v-if="mostrarOpciones" flat dense icon="more_vert" color="grey-8">
+  <q-list>
+    <!-- JEFE PILOTO - Aprobar Solicitudes -->
+    <q-item clickable v-close-popup @click="abrirDialogoAprobacion" 
+            v-if="esJefePiloto && estadoGeneral === 'Solicitud Pendiente'">
+      <q-item-section>
+        <q-item-label>Aprobar Solicitud</q-item-label>
+      </q-item-section>
+    </q-item>
 
-        <q-item clickable v-close-popup @click="abrirDialogoAprobacion" 
-                v-if="esJefePiloto && estadoProceso === 'Prevuelo pendiente de aprobación' && !registroCompletado">
-          <q-item-section>
-            <q-item-label>Aprobar Prevuelo</q-item-label>
-          </q-item-section>
-        </q-item>
+        <!-- JEFE PILOTO - Aprobar Solicitudes -->
+    <q-item clickable v-close-popup @click="abrirDialogoAprobacion" 
+            v-if="esJefePiloto && estadoGeneral === 'Solicitud en Espera'">
+      <q-item-section>
+        <q-item-label>Aprobar Solicitud</q-item-label>
+      </q-item-section>
+    </q-item>
 
-        <q-item clickable v-close-popup @click="denegarRegistro" 
-                v-if="esJefePiloto && estadoProceso === 'Prevuelo pendiente de aprobación' && !registroCompletado">
-          <q-item-section>
-            <q-item-label>Denegar Prevuelo</q-item-label>
-          </q-item-section>
-        </q-item>
+            <!-- JEFE PILOTO - Aprobar Solicitudes -->
+    <q-item clickable v-close-popup @click="denegarRegistro" 
+            v-if="esJefePiloto && estadoGeneral === 'Solicitud en Espera'">
+      <q-item-section>
+        <q-item-label>Denegar Solicitud</q-item-label>
+      </q-item-section>
+    </q-item>
 
-        <q-item clickable v-close-popup @click="abrirDialogoAprobacion" 
-                v-if="esJefePiloto && estadoProceso === 'Postvuelo pendiente de aprobación' && !registroCompletado">
-          <q-item-section>
-            <q-item-label>Aprobar Postvuelo</q-item-label>
-          </q-item-section>
-        </q-item>
+    <!-- JEFE PILOTO - Denegar Solicitudes -->
+    <q-item clickable v-close-popup @click="denegarRegistro" 
+            v-if="esJefePiloto && estadoGeneral === 'Solicitud Pendiente'">
+      <q-item-section>
+        <q-item-label>Denegar Solicitud</q-item-label>
+      </q-item-section>
+    </q-item>
 
-        <q-item clickable v-close-popup @click="denegarRegistro" 
-                v-if="esJefePiloto && estadoProceso === 'Postvuelo pendiente de aprobación' && !registroCompletado">
-          <q-item-section>
-            <q-item-label>Denegar Postvuelo</q-item-label>
-          </q-item-section>
-        </q-item>
-        
-        <!-- <q-item clickable v-close-popup @click="$emit('editar', registro)" 
-                v-if="!esJefePiloto && puedeEditar && !registroCompletado">
-          <q-item-section>
-            <q-item-label>Editar</q-item-label>
-          </q-item-section>
-        </q-item> -->
+        <!-- JEFE PILOTO - Enespera Solicitudes -->
+    <q-item clickable v-close-popup @click="enesperaRegistro" 
+            v-if="esJefePiloto && estadoGeneral === 'Solicitud Pendiente'">
+      <q-item-section>
+        <q-item-label>En Espera Solicitud</q-item-label>
+      </q-item-section>
+    </q-item>
 
-          <q-item clickable v-close-popup @click="$emit('editar', registro)" 
-                v-if="puedeEditar && !registroCompletado">
-          <q-item-section>
-            <q-item-label>Editar</q-item-label>
-          </q-item-section>
-        </q-item>
+    <!-- JEFE PILOTO - Aprobar Prevuelos -->
+    <q-item clickable v-close-popup @click="abrirDialogoAprobacion" 
+            v-if="esJefePiloto && estadoGeneral === 'Prevuelo Pendiente'">
+      <q-item-section>
+        <q-item-label>Aprobar Prevuelo</q-item-label>
+      </q-item-section>
+    </q-item>
 
-       <!-- <q-item clickable v-close-popup @click="abrirDialogoCancelacion" 
-                v-if="!esJefePiloto && props.tipoRegistro === 'solicitudes' && 
-                estadoProceso.value !== 'Postvuelo pendiente de aprobación' && !registroCompletado">
-          <q-item-section>
-            <q-item-label>Cancelar Mision</q-item-label>
-          </q-item-section>
-        </q-item>
-        
-        <q-item clickable v-close-popup @click="$emit('ir-prevuelo', registro.id)" 
-                v-if="!esJefePiloto && estadoProceso === 'Solicitud aprobada, pendiente de prevuelo' && !registroCompletado">
-          <q-item-section>
-            <q-item-label>Ir a Prevuelo</q-item-label>
-          </q-item-section>
-        </q-item>
-        
-        <q-item clickable v-close-popup @click="$emit('ir-postvuelo', registro.id)" 
-                v-if="!esJefePiloto && estadoProceso === 'Prevuelo aprobado, pendiente de postvuelo' && !registroCompletado">
-          <q-item-section>
-            <q-item-label>Ir a Postvuelo</q-item-label>
-          </q-item-section>
-        </q-item> -->
+    <!-- JEFE PILOTO - Denegar Prevuelos -->
+    <q-item clickable v-close-popup @click="denegarRegistro" 
+            v-if="esJefePiloto && estadoGeneral === 'Prevuelo Pendiente'">
+      <q-item-section>
+        <q-item-label>Denegar Prevuelo</q-item-label>
+      </q-item-section>
+    </q-item>
 
-              <q-item clickable v-close-popup @click="abrirDialogoCancelacion" 
-                v-if="esCreadorRegistro && props.tipoRegistro === 'solicitudes' && 
-                estadoProceso.value !== 'Postvuelo pendiente de aprobación' && !registroCompletado">
-          <q-item-section>
-            <q-item-label>Cancelar Mision</q-item-label>
-          </q-item-section>
-        </q-item>
-        
-        <q-item clickable v-close-popup @click="$emit('ir-prevuelo', registro.id)" 
-                v-if="puedeIrAPrevuelo">
-          <q-item-section>
-            <q-item-label>Ir a Prevuelo</q-item-label>
-          </q-item-section>
-        </q-item>
-        
-        <q-item clickable v-close-popup @click="$emit('ir-postvuelo', registro.id)" 
-                v-if="puedeIrAPostvuelo">
-          <q-item-section>
-            <q-item-label>Ir a Postvuelo</q-item-label>
-          </q-item-section>
-        </q-item>
+    <!-- JEFE PILOTO - Aprobar Postvuelos -->
+    <q-item clickable v-close-popup @click="abrirDialogoAprobacion" 
+            v-if="esJefePiloto && estadoGeneral === 'Postvuelo Pendiente'">
+      <q-item-section>
+        <q-item-label>Aprobar Postvuelo</q-item-label>
+      </q-item-section>
+    </q-item>
 
-      </q-list>
-    </q-btn-dropdown>
+    <!-- JEFE PILOTO - Denegar Postvuelos -->
+    <q-item clickable v-close-popup @click="denegarRegistro" 
+            v-if="esJefePiloto && estadoGeneral === 'Postvuelo Pendiente'">
+      <q-item-section>
+        <q-item-label>Denegar Postvuelo</q-item-label>
+      </q-item-section>
+    </q-item>
+
+    <!-- PILOTO/CREADOR - Ir a Prevuelo -->
+    <q-item clickable v-close-popup @click="$emit('ir-prevuelo', registro.consecutivo)" 
+            v-if="puedeIrAPrevuelo">
+      <q-item-section>
+        <q-item-label>Iniciar Prevuelo</q-item-label>
+      </q-item-section>
+    </q-item>
+
+    <!-- PILOTO/CREADOR - Ir a Postvuelo -->
+    <q-item clickable v-close-popup @click="$emit('ir-postvuelo', registro.consecutivo)" 
+            v-if="puedeIrAPostvuelo">
+      <q-item-section>
+        <q-item-label>Iniciar Postvuelo</q-item-label>
+      </q-item-section>
+    </q-item>
+
+    <!-- EDITAR - Para creador o jefe -->
+    <q-item clickable v-close-popup @click="$emit('editar', registro)" 
+            v-if="puedeEditar">
+      <q-item-section>
+        <q-item-label>Editar {{ tipoRegistroActual }}</q-item-label>
+      </q-item-section>
+    </q-item>
+
+    <!-- CANCELAR - Solo creador -->
+    <q-item clickable v-close-popup @click="abrirDialogoCancelacion" 
+            v-if="puedeCancelar">
+      <q-item-section>
+        <q-item-label>Cancelar {{ tipoRegistroActual }}</q-item-label>
+      </q-item-section>
+    </q-item>
+
+  </q-list>
+</q-btn-dropdown>
     
     <q-dialog v-model="mostrarAprobacion">
       <q-card style="width: 700px; max-width: 90vw;">
@@ -106,7 +117,7 @@
         
         <q-card-section>
           <AprobarForm 
-            :consecutivo="registro.id" 
+            :consecutivo="props.registro.consecutivo" 
             :registroSolicitud="registro.datosOriginales || registro"
             @cancelar="mostrarAprobacion = false"
             @aprobacion-completada="aprobacionCompletada"
@@ -124,7 +135,7 @@
         
         <q-card-section>
           <CancelarForm 
-            :consecutivo="registro.id" 
+            :consecutivo="props.registro.consecutivo" 
             :registroSolicitud="registro.datosOriginales || registro"
             @cancelar="mostrarCancelacion = false"
             @cancelarSolicitud="cancelacionCompletada"
@@ -136,12 +147,14 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps, defineEmits } from 'vue';
+import { ref, computed, defineProps, defineEmits, onMounted, watch } from 'vue';
 import AprobarForm from './AprobarForm.vue';
 import CancelarForm from './CancelarForm.vue';
 import { useStoreUsuarios } from '../stores/usuarios'
+import { useStoreSolicitudes } from '../stores/solicitudes'
 
 const useUsuario = useStoreUsuarios()
+const useSolicitud = useStoreSolicitudes()
 
 const props = defineProps({
   registro: {
@@ -158,120 +171,69 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['editar', 'aprobar', 'ir-prevuelo', 'ir-postvuelo', 'aprobacion-completada', 'cancelarSolicitud', 'aprobar-directo', 'denegar-directo']);
+const emit = defineEmits(['editar', 'aprobar', 'ir-prevuelo', 'ir-postvuelo', 'aprobacion-completada', 'cancelarSolicitud', 'aprobar-directo', 'denegar-directo', 'enespera-directo']);
 const mostrarAprobacion = ref(false);
 const mostrarCancelacion = ref(false);
+const cargandoEstado = ref(false)
+const estadoActual = ref('Desconocido')
 
 const esJefePiloto = computed(() => {
   return props.perfilUsuario.toLowerCase() === 'jefepiloto';
 });
 
-console.log('AccionesRegistro - props recibidos:', {
-  tipoRegistro: props.tipoRegistro,
-  registro: props.registro,
-  perfilUsuario: props.perfilUsuario
-});
-
-// const registroCompletado = computed(() => {
-//   const registro = props.registro;
-//   const datosOriginales = registro.datosOriginales || registro;
-  
-//   if (datosOriginales.estado === 'Cancelado' || 
-//       estadoProceso.value === 'Proceso Completado') {
-//     return true;
-//   }
-  
-//   if (props.tipoRegistro === 'prevuelos' && datosOriginales.prevueloAprobado === true) {
-//     return true;
-//   }
-  
-//   if (props.tipoRegistro === 'postvuelos' && datosOriginales.postvueloAprobado === true) {
-//     return true;
-//   }
-  
-//   return false;
-// });
-
-// const puedeEditar = computed(() => {
-//   return ['Pendiente de aprobación', 'Prevuelo pendiente de aprobación', 'Postvuelo pendiente de aprobación'].includes(estadoProceso.value);
-// });
-
-// const estadoProceso = computed(() => {
-//   const registro = props.registro;
-//   const datosOriginales = registro.datosOriginales || {};
-  
-//   if (datosOriginales.estado === 'Cancelado' || registro.estado === 'Cancelado') {
-//     return 'Cancelado';
-//   }
-  
-//   if (datosOriginales.estadoProceso) {
-//     return datosOriginales.estadoProceso;
-//   }
-  
-//   const tieneEtapaSolicitud = true; 
-//   const tieneEtapaPrevuelo = datosOriginales.prevueloAprobado === true;
-//   const tieneEtapaPostvuelo = datosOriginales.postvueloAprobado === true;
-  
-//   if (tieneEtapaSolicitud && tieneEtapaPrevuelo && tieneEtapaPostvuelo) {
-//     return 'Proceso Completado';
-//   } else if (tieneEtapaSolicitud && tieneEtapaPrevuelo && registro.tipoRegistro === 'postvuelos') {
-//     return 'Prevuelo aprobado, pendiente de postvuelo';
-//   } else if (tieneEtapaSolicitud && tieneEtapaPrevuelo) {
-//     return 'Postvuelo pendiente de aprobacion';
-//   } else if (tieneEtapaSolicitud && !tieneEtapaPrevuelo && (registro.estado === 'Aprobado' || registro.estado === 'Aprobada')) {
-//     return 'Solicitud aprobada, pendiente de prevuelo';
-//   } else if (tieneEtapaSolicitud && registro.tipoRegistro === 'prevuelos' && !tieneEtapaPrevuelo) {
-//     return 'Prevuelo pendiente de aprobacion';
-//   } else {
-//     return 'Pendiente de aprobación';
-//   }
-// });
-
-// const mostrarOpciones = computed(() => {
-//   if (estadoProceso.value === 'Proceso Completado') return false;
-  
-//   if (props.registro.estado === 'Aprobado' || props.registro.estado === 'Denegado' ) {
-    
-//     if (estadoProceso.value === 'Solicitud aprobada, pendiente de prevuelo') return true;
-    
-//     if (estadoProceso.value === 'Prevuelo aprobado, pendiente de postvuelo') return true;
-    
-//     return false;
-//   }
-  
-//   return true;
-// });
-
 function abrirDialogoAprobacion() {
-  const tipoActual = props.registro.tipoRegistro || props.tipoRegistro;
+  const estado = estadoGeneral.value;
   
-  if (tipoActual === 'solicitudes') {
-
+  if (estado === 'Solicitud Pendiente') {
     mostrarAprobacion.value = true;
-  } else if (tipoActual === 'prevuelos') {
+  } else if (estado === 'Prevuelo Pendiente') {
     emit('aprobar-directo', {
-      id: props.registro.id,
+      consecutivo: props.registro.consecutivo,  
       tipo: 'prevuelos',
       accion: 'aprobar'
     });
-  } else if (tipoActual === 'postvuelos') {
+  } else if (estado === 'Postvuelo Pendiente') {
     emit('aprobar-directo', {
-      id: props.registro.id,
-      tipo: 'postvuelos',
+      consecutivo: props.registro.consecutivo,  
+      tipo: 'postvuelos', 
       accion: 'aprobar'
     });
   }
+  console.log('consecutivo en abrir', props.registro.consecutivo); 
 }
 
 function denegarRegistro() {
-  const tipoActual = props.registro.tipoRegistro || props.tipoRegistro;
+  const estado = estadoGeneral.value;
+  let tipo = 'solicitudes';
+  
+  if (estado === 'Prevuelo Pendiente') {
+    tipo = 'prevuelos';
+  } else if (estado === 'Postvuelo Pendiente') {
+    tipo = 'postvuelos';
+  }
   
   emit('denegar-directo', {
-    id: props.registro.id,
-    tipo: tipoActual,
+    consecutivo: props.registro.consecutivo,  
+    tipo: tipo,
     accion: 'denegar'
   });
 }
+
+function enesperaRegistro() {
+  const estado = estadoGeneral.value;
+  let tipo = 'solicitudes';
+  
+  if (estado === 'Solicitud Pendiente') {
+    tipo = 'solicitudes';
+  } 
+  
+  emit('enespera-directo', {
+    consecutivo: props.registro.consecutivo,  
+    tipo: tipo,
+    accion: 'enespera'
+  });
+}
+
 
 function aprobacionCompletada(data) {
   mostrarAprobacion.value = false;
@@ -286,125 +248,162 @@ function cancelacionCompletada(data) {
   emit('cancelar-directo', data);
 }
 
-// ------
+onMounted(async () => {
+  if (props.registro?.consecutivo) {
+    await obtenerEstadoDelConsecutivo(props.registro.consecutivo)
+  }
+})
+
+const obtenerEstadoDelConsecutivo = async (consecutivo) => {
+  if (!consecutivo) return
+  console.log(consecutivo);
+  
+  cargandoEstado.value = true
+  try {
+    const response = await useSolicitud.obtenerEstadoConsecutivo(consecutivo)
+    console.log('Respuesta estado desde store AccionesRegistro:', response)
+    
+    if (response?.ok && response?.solicitud) {
+      estadoActual.value = response.solicitud.estadoGeneral
+      console.log('Estado actualizado:', estadoActual.value)
+    } else {
+      console.warn('Respuesta sin datos válidos:', response)
+      estadoActual.value = 'Error'
+    }
+    
+    return response
+  } catch (error) {
+    console.error('Error al obtener estado del consecutivo:', error)
+    estadoActual.value = 'Error'
+    return null
+  } finally {
+    cargandoEstado.value = false
+  }
+}
+
+watch(() => props.registro?.consecutivo, async (nuevoConsecutivo, anteriorConsecutivo) => {
+  if (nuevoConsecutivo && nuevoConsecutivo !== anteriorConsecutivo) {
+    await obtenerEstadoDelConsecutivo(nuevoConsecutivo)
+  }
+}, { immediate: false })
+
 const emailUsuario = useUsuario.correo || localStorage.getItem('email')
+
+const jefeActuaComoPiloto = computed(() => {
+  const datosOriginales = props.registro.datosOriginales || props.registro;
+  const emailUsuario = useUsuario.correo || localStorage.getItem('email');
+  
+  // Un jefe actúa como piloto si es jefe y está asignado como piloto en la solicitud
+  return esJefePiloto.value && (
+    emailUsuario === datosOriginales.piloto ||
+    datosOriginales.piloto === 'Anderson Pinto' 
+  );
+});
+
+const estadoGeneral = computed(() => {
+  if (estadoActual.value !== 'Desconocido') {
+    return estadoActual.value;
+  }
+  const datosOriginales = props.registro.datosOriginales || props.registro;
+  return datosOriginales.estadoGeneral || 'Desconocido';
+});
+
+const tipoRegistroActual = computed(() => {
+  const labels = {
+    'solicitudes': 'Solicitud',
+    'prevuelos': 'Prevuelo', 
+    'postvuelos': 'Postvuelo'
+  };
+  return labels[props.tipoRegistro] || 'Registro';
+});
 
 const esCreadorRegistro = computed(() => {
   const registro = props.registro;
   const datosOriginales = registro.datosOriginales || registro;
+  const emailUsuario = useUsuario.correo || localStorage.getItem('email');
   
-  // Comparar el email del usuario con el email del creador
+  console.log('Verificando creador:', {
+    emailUsuario,
+    datosOriginales,
+    usuario: datosOriginales.usuario || datosOriginales.useremail || datosOriginales['correo de usuario'],
+  });
+  
   return emailUsuario === datosOriginales.usuario || 
-         emailUsuario === datosOriginales.useremail;
-});
-
-// ¿El jefe piloto puede actuar como piloto en sus propios registros?
-const jefeActuaComoPiloto = computed(() => {
-  return esJefePiloto.value && esCreadorRegistro.value;
-});
-
-// Para debugging
-console.log('AccionesRegistro - props recibidos:', {
-  tipoRegistro: props.tipoRegistro,
-  registro: props.registro,
-  perfilUsuario: props.perfilUsuario,
-  emailUsuario: emailUsuario,
-  esCreador: esCreadorRegistro.value,
-  jefeActuaComoPiloto: jefeActuaComoPiloto.value
-});
-
-const registroCompletado = computed(() => {
-  const registro = props.registro;
-  const datosOriginales = registro.datosOriginales || registro;
-  
-  if (datosOriginales.estado === 'Cancelado' || 
-      estadoProceso.value === 'Proceso Completado') {
-    return true;
-  }
-  
-  if (props.tipoRegistro === 'prevuelos' && datosOriginales.prevueloAprobado === true) {
-    return true;
-  }
-  
-  if (props.tipoRegistro === 'postvuelos' && datosOriginales.postvueloAprobado === true) {
-    return true;
-  }
-  
-  return false;
+         emailUsuario === datosOriginales.useremail ||
+         emailUsuario === datosOriginales.email ||
+         emailUsuario === datosOriginales.correodelcoordinador ||
+         emailUsuario === datosOriginales['correo de usuario'];
 });
 
 const puedeEditar = computed(() => {
-  // Si es el jefe piloto o el creador del registro, puede editar registros pendientes
-  return (esJefePiloto.value || esCreadorRegistro.value) && 
-    ['Pendiente de aprobación', 'Prevuelo pendiente de aprobación', 'Postvuelo pendiente de aprobación'].includes(estadoProceso.value);
+  const estadosEditables = [
+    'Solicitud Pendiente', 
+    'Solicitud en Espera',
+    'Prevuelo Pendiente',
+    'Postvuelo Pendiente'
+  ];
+  
+  const tienePermisos = esJefePiloto.value || esCreadorRegistro.value;
+  
+  return tienePermisos && estadosEditables.includes(estadoGeneral.value);
 });
 
-// ¿Puede ir a prevuelo?
+const puedeCancelar = computed(() => {
+  const estadosCancelables = [
+    'Solicitud Pendiente',
+    'Solicitud en Espera', 
+    'Prevuelo no iniciado',
+    'Prevuelo Pendiente',
+    'Postvuelo no iniciado',
+  ];
+  
+  return esCreadorRegistro.value && estadosCancelables.includes(estadoGeneral.value);
+});
+
 const puedeIrAPrevuelo = computed(() => {
-  // El piloto regular siempre puede ir a su propio prevuelo
-  // El jefe piloto solo puede ir a prevuelo si es su propio registro
-  return (esCreadorRegistro.value || jefeActuaComoPiloto.value) && 
-    estadoProceso.value === 'Solicitud aprobada, pendiente de prevuelo' && 
-    !registroCompletado.value;
+  const esPilotoOCreador = esCreadorRegistro.value || jefeActuaComoPiloto.value;
+  return esPilotoOCreador && estadoGeneral.value === 'Prevuelo no iniciado';
 });
 
-// ¿Puede ir a postvuelo?
 const puedeIrAPostvuelo = computed(() => {
-  // El piloto regular siempre puede ir a su propio postvuelo
-  // El jefe piloto solo puede ir a postvuelo si es su propio registro
-  return (esCreadorRegistro.value || jefeActuaComoPiloto.value) && 
-    estadoProceso.value === 'Prevuelo aprobado, pendiente de postvuelo' && 
-    !registroCompletado.value;
-});
-
-const estadoProceso = computed(() => {
-  const registro = props.registro;
-  const datosOriginales = registro.datosOriginales || {};
-  
-  if (datosOriginales.estado === 'Cancelado' || registro.estado === 'Cancelado') {
-    return 'Cancelado';
-  }
-  
-  if (datosOriginales.estadoProceso) {
-    return datosOriginales.estadoProceso;
-  }
-  
-  const tieneEtapaSolicitud = true; 
-  const tieneEtapaPrevuelo = datosOriginales.prevueloAprobado === true;
-  const tieneEtapaPostvuelo = datosOriginales.postvueloAprobado === true;
-  
-  if (tieneEtapaSolicitud && tieneEtapaPrevuelo && tieneEtapaPostvuelo) {
-    return 'Proceso Completado';
-  } else if (tieneEtapaSolicitud && tieneEtapaPrevuelo && registro.tipoRegistro === 'postvuelos') {
-    return 'Prevuelo aprobado, pendiente de postvuelo';
-  } else if (tieneEtapaSolicitud && tieneEtapaPrevuelo) {
-    return 'Postvuelo pendiente de aprobacion';
-  } else if (tieneEtapaSolicitud && !tieneEtapaPrevuelo && (registro.estado === 'Aprobado' || registro.estado === 'Aprobada')) {
-    return 'Solicitud aprobada, pendiente de prevuelo';
-  } else if (tieneEtapaSolicitud && registro.tipoRegistro === 'prevuelos' && !tieneEtapaPrevuelo) {
-    return 'Prevuelo pendiente de aprobacion';
-  } else {
-    return 'Pendiente de aprobación';
-  }
+  const esPilotoOCreador = esCreadorRegistro.value || jefeActuaComoPiloto.value;
+  return esPilotoOCreador && estadoGeneral.value === 'Sin Postvuelo';
 });
 
 const mostrarOpciones = computed(() => {
-  if (estadoProceso.value === 'Proceso Completado') return false;
+  // No mostrar si está cargando el estado
+  if (cargandoEstado.value) return false;
   
-  if (props.registro.estado === 'Aprobado' || props.registro.estado === 'Denegado' ) {
-    
-    if (estadoProceso.value === 'Solicitud aprobada, pendiente de prevuelo') return true;
-    
-    if (estadoProceso.value === 'Prevuelo aprobado, pendiente de postvuelo') return true;
-    
-    return false;
-  }
+  // No mostrar si está completado o cancelado
+  const estadosFinales = ['Completado', 'Cancelado'];
+  if (estadosFinales.includes(estadoGeneral.value)) return false;
   
-  return true;
+  // Mostrar si tiene algún permiso
+  return esJefePiloto.value ||
+         esCreadorRegistro.value ||
+         puedeIrAPrevuelo.value ||
+         puedeIrAPostvuelo.value ||
+         puedeEditar.value ||
+         puedeCancelar.value;
 });
 
-
-
+console.log('AccionesRegistro - Estado desde store:', {
+  consecutivo: props.registro?.consecutivo,
+  tipoRegistro: props.tipoRegistro,
+  estadoGeneral: estadoGeneral.value,
+  estadoActual: estadoActual.value,
+  cargandoEstado: cargandoEstado.value,
+  perfilUsuario: props.perfilUsuario,
+  emailUsuario: emailUsuario,
+  esCreador: esCreadorRegistro.value,
+  esJefePiloto: esJefePiloto.value,
+  jefeActuaComoPiloto: jefeActuaComoPiloto.value,
+  puedeIrAPrevuelo: puedeIrAPrevuelo.value,
+  puedeIrAPostvuelo: puedeIrAPostvuelo.value,
+  puedeEditar: puedeEditar.value,
+  puedeCancelar: puedeCancelar.value,
+  mostrarOpciones: mostrarOpciones.value
+});
 
 </script>
 

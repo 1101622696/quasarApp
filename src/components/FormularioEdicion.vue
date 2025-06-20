@@ -10,13 +10,14 @@
       <q-separator />
       
       <q-card-section class="q-pt-md">
-        <component 
-          :is="componenteFormulario" 
-          :datos="datos" 
-          :esEdicion="accion === 'editar'"
-          @guardar="guardarYCerrar"
-          @cancelar="cerrar"
-        />
+<component 
+  :is="componenteFormulario" 
+  :datos="datos" 
+  :consecutivo="datos.consecutivo"  
+  :esEdicion="accion === 'editar'"
+  @guardar="guardarYCerrar"
+  @cancelar="cerrar"
+/>
       </q-card-section>
     </q-card>
   </q-dialog>

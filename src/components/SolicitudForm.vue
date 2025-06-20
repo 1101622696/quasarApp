@@ -137,150 +137,180 @@
               <q-input filled v-model="formulario.justificacionvueloespecial" label="Justificación:" />
         </div>
 
-        <div class="col-12 col-sm-6" v-if="perfilUsuario.toLowerCase() !== 'cliente'">
-              <q-select
-                filled
-                v-model="formulario.tipoOperacion"
-                label="tipo de Operacion"
-                :options="tipoOperacionOptions"
-                style="width: 300px"
-                class="q-mb-md"
+<div class="col-12 col-sm-6" v-if="perfilUsuario.toLowerCase() !== 'cliente'">
+    <div class="q-pa-md">
+  <q-select
+    filled
+    v-model="formulario.tipoOperacion"
+    :options="opcionesOperacion"
+    label="Selecciona tipo de operación"
+    @update:model-value="mostrarFormulario"
+    style="width: 300px"
+    class="q-mb-md"
+    emit-value
+    map-options
+    option-label="label"
+    option-value="value"
+  />
+
+      <!-- Formulario para Polígono -->
+      <div v-if="formulario.tipoOperacion === 'poligono'" class="q-mt-md">
+        <q-input 
+          class="input q-mb-md"
+          filled 
+          v-model="formulario.poligononombre" 
+          label="Polígono (Nombre)"
+        />
+        <q-input
+          class="input q-mb-md"
+          filled
+          v-model="formulario.altura_poligono"
+          label="Altura solicitada (metros / pies)"
+        />
+
+        <q-table
+          flat
+          bordered
+          :rows="filasPoligono"
+          :columns="columnas"
+          row-key="item"
+          hide-bottom
+          class="q-mb-md"
+        >
+<template #body-cell-latitud="props">
+  <q-td>
+    <q-input dense v-model="formulario[`latitud_poligono_${props.row.item}`]" />
+  </q-td>
+</template>
+<template #body-cell-longitud="props">
+  <q-td>
+    <q-input dense v-model="formulario[`longitud_poligono_${props.row.item}`]" />
+  </q-td>
+</template>
+          <template #body-cell-item="props">
+            <q-td>
+              {{ props.row.item }}
+              <q-btn
+                v-if="props.row.item === filasPoligono.length && props.row.item < 5"
+                size="sm"
+                flat
+                icon="add"
+                color="primary"
+                @click="agregarFilaPoligono"
+                class="q-ml-sm"
               />
+            </q-td>
+          </template>
+        </q-table>
 
-              <q-input
-                class="input"
-                filled
-                v-model="formulario.poligononombre"
-                label="Nombre del Polígono"
-                :dense="dense"
-              />
-              <q-input
-                class="input"
-                filled
-                v-model="formulario.altura_poligono"
-                label="Altura solicitada: (metros / pies)"
-                :dense="dense"
-              />
-
-               <div class="q-pa-md">
-                <!-- Selector de tipo de operación -->
-                <q-select
-                  filled
-                  v-model="formulario.tipoOperacion"
-                  :options="opcionesOperacion"
-                  label="Selecciona tipo de operación"
-                  @update:model-value="mostrarFormulario"
-                />
-
-                <!-- Formulario: Polígono -->
-                <div v-if="formulario.tipoOperacion === 'poligono'" class="q-mt-md">
-                  <q-input filled v-model="formulario.nombrePoligono" label="Polígono (Nombre)" />
-                  <q-input
-                    filled
-                    v-model="formulario.alturaPoligono"
-                    label="Altura solicitada (metros / pies)"
-                  />
-
-               <q-table
-                    flat
-                    bordered
-                    :rows="filasPoligono"
-                    :columns="columnas"
-                    row-key="item"
-                    hide-bottom
-                  >
-                    <template #body-cell-latitud="props">
-                      <q-td>
-                        <q-input dense v-model="props.row.latitud" />
-                      </q-td>
-                    </template>
-                    <template #body-cell-longitud="props">
-                      <q-td>
-                        <q-input dense v-model="props.row.longitud" />
-                      </q-td>
-                    </template>
-                    <template #body-cell-item="props">
-                      <q-td>
-                        {{ props.row.item }}
-                        <q-btn
-                          v-if="props.row.item === filasPoligono.length && filasPoligono.length < 5"
-                          size="sm"
-                          flat
-                          icon="add"
-                          color="primary"
-                          @click="agregarFilaPoligono"
-                        />
-                      </q-td>
-                    </template>
-                  </q-table>
-
-                  <div class="text-caption text-grey q-mt-sm">
-                    * La última coordenada debe coincidir con la primera para cerrar el polígono.
-                  </div>
-                </div>
-
-                <!-- Formulario: Tramo -->
-                <div v-if="formulario.tipoOperacion === 'tramo'" class="q-mt-md">
-                  <q-input filled v-model="formulario.nombreTramo" label="Tramo Lineal (Nombre)" />
-                  <q-input filled v-model="formulario.direccionTramo" label="Dirección" />
-
-                  <q-table
-                    flat
-                    bordered
-                    :rows="filasTramo"
-                    :columns="columnas"
-                    row-key="item"
-                    hide-bottom
-                  >
-                    <template #body-cell-latitud="props">
-                      <q-td><q-input dense v-model="props.row.latitud" /></q-td>
-                    </template>
-                    <template #body-cell-longitud="props">
-                      <q-td><q-input dense v-model="props.row.longitud" /></q-td>
-                    </template>
-                    <template #body-cell-item="props">
-                      <q-td>
-                        {{ props.row.item }}
-                        <q-btn
-                          v-if="props.row.item === filasTramo.length && filasTramo.length < 5"
-                          size="sm"
-                          flat
-                          icon="add"
-                          color="primary"
-                          @click="agregarFilaTramo"
-                        />
-                      </q-td>
-                    </template>
-                  </q-table>
-                </div>
-
-                <!-- Formulario: Circunferencia -->
-                <div v-if="formulario.tipoOperacion === 'circunferencia'" class="q-mt-md">
-                  <q-input filled v-model="formulario.nombreCircunferencia" label="Circunferencia (Nombre)" />
-                  <q-input
-                    filled
-                    v-model="formulario.alturaCircunferencia"
-                    label="Altura solicitada (metros / pies)"
-                  />
-
-                  <q-table
-                    flat
-                    bordered
-                    :rows="filasCircunferencia"
-                    :columns="columnas"
-                    row-key="item"
-                    hide-bottom
-                  >
-                    <template #body-cell-latitud="props">
-                      <q-td><q-input dense v-model="props.row.latitud" /></q-td>
-                    </template>
-                    <template #body-cell-longitud="props">
-                      <q-td><q-input dense v-model="props.row.longitud" /></q-td>
-                    </template>
-                  </q-table>
-                </div>
-              </div>
+        <div class="text-caption text-grey q-mt-sm">
+          * La última coordenada debe coincidir con la primera para cerrar el polígono.
         </div>
+      </div>
+
+      <!-- Formulario para Tramo -->
+      <div v-if="formulario.tipoOperacion === 'tramo'" class="q-mt-md">
+        <q-input 
+          class="input q-mb-md"
+          filled 
+          v-model="formulario.tramolinealnombre" 
+          label="Tramo Lineal (Nombre)"
+        />
+        <q-input 
+          class="input q-mb-md"
+          filled 
+          v-model="formulario.altura_tramo" 
+          label="Dirección"
+        />
+
+        <q-table
+          flat
+          bordered
+          :rows="filasTramo"
+          :columns="columnas"
+          row-key="item"
+          hide-bottom
+          class="q-mb-md"
+        >
+         <template #body-cell-latitud="props">
+  <q-td>
+    <q-input dense v-model="formulario[`latitud_tramo_${props.row.item}`]" />
+  </q-td>
+</template>
+<template #body-cell-longitud="props">
+  <q-td>
+    <q-input dense v-model="formulario[`longitud_tramo_${props.row.item}`]" />
+  </q-td>
+</template>
+          <template #body-cell-item="props">
+            <q-td>
+              {{ props.row.item }}
+              <q-btn
+                v-if="props.row.item === filasTramo.length && props.row.item < 5"
+                size="sm"
+                flat
+                icon="add"
+                color="primary"
+                @click="agregarFilaTramo"
+                class="q-ml-sm"
+              />
+            </q-td>
+          </template>
+        </q-table>
+      </div>
+
+      <!-- Formulario para Circunferencia -->
+      <div v-if="formulario.tipoOperacion === 'circunferencia'" class="q-mt-md">
+        <q-input 
+          class="input q-mb-md"
+          filled 
+          v-model="formulario.circuferenciaencoordenadayradionombre" 
+          label="Circunferencia (Nombre)"
+        />
+        <q-input
+          class="input q-mb-md"
+          filled
+          v-model="formulario.altura_circunferencia"
+          label="Altura solicitada (metros / pies)"
+        />
+
+        <q-table
+          flat
+          bordered
+          :rows="filasCircunferencia"
+          :columns="columnas"
+          row-key="item"
+          hide-bottom
+          class="q-mb-md"
+        >
+          <template #body-cell-latitud="props">
+  <q-td>
+    <q-input dense v-model="formulario[`latitud_circunferencia_${props.row.item}`]" />
+  </q-td>
+</template>
+<template #body-cell-longitud="props">
+  <q-td>
+    <q-input dense v-model="formulario[`longitud_circunferencia_${props.row.item}`]" />
+  </q-td>
+</template>
+          <template #body-cell-item="props">
+            <q-td>
+              {{ props.row.item }}
+              <q-btn
+                v-if="props.row.item === filasCircunferencia.length && props.row.item < 2"
+                size="sm"
+                flat
+                icon="add"
+                color="primary"
+                @click="agregarFilaCircunferencia"
+                class="q-ml-sm"
+              />
+            </q-td>
+          </template>
+        </q-table>
+      </div>
+    </div>
+  </div>
 
 
 <div class="q-pa-md">
@@ -334,6 +364,7 @@ import { ref, onMounted, watch, computed } from 'vue';
 import { useStoreSolicitudes } from '../stores/solicitudes.js'
 import { departamentosBase } from '../composables/departamentos'
 import { useStoreUsuarios } from '../stores/usuarios';
+import { useQuasar } from 'quasar'
 
 const props = defineProps({
   datos: {
@@ -350,12 +381,14 @@ const emit = defineEmits(['guardar', 'cancelar']);
 const archivosSeleccionados = ref(null);
 const useSolicitud = useStoreSolicitudes();
 const useUsuario = useStoreUsuarios();
-
+const dense = ref(false);
 const perfilUsuario = computed(() => {
   return useUsuario.perfile || '';
 });
 
 const cargando = ref(false);
+const $q = useQuasar();
+
 const formulario = ref({
 pilotoarealizarvuelo: '',
  tipodeoperacionaerea: '',
@@ -372,14 +405,41 @@ pilotoarealizarvuelo: '',
  vueloespecial: '',
  justificacionvueloespecial: '',
  tipoOperacion: null,
- nombreTramo: '',
- direccionTramo: '',
- nombrePoligono: '',
- alturaPoligono: '',
- nombreCircunferencia: '',
- alturaCircunferencia: '',
+ poligononombre: '',
+  altura_poligono: '',
+  latitud_poligono_1: '',
+  longitud_poligono_1: '',
+  latitud_poligono_2: '',
+  longitud_poligono_2: '',
+  latitud_poligono_3: '',
+  longitud_poligono_3: '',
+  latitud_poligono_4: '',
+  longitud_poligono_4: '',
+  latitud_poligono_5: '',
+  longitud_poligono_5: '',
+  
+  tramolinealnombre: '',
+  altura_tramo: '',
+  latitud_tramo_1: '',
+  longitud_tramo_1: '',
+  latitud_tramo_2: '',
+  longitud_tramo_2: '',
+  latitud_tramo_3: '',
+  longitud_tramo_3: '',
+  latitud_tramo_4: '',
+  longitud_tramo_4: '',
+  latitud_tramo_5: '',
+  longitud_tramo_5: '',
+  
+  circuferenciaencoordenadayradionombre: '',
+  altura_circunferencia: '',
+  latitud_circunferencia_1: '',
+  longitud_circunferencia_1: '',
+  latitud_circunferencia_2: '',
+  longitud_circunferencia_2: '',
  file_kmz: []
 });
+
 
 const tipodeoperacionaereaOptions = [
   'SIMPLE CAPTURA DE IMÁGENES O DATOS',
@@ -417,7 +477,6 @@ const prepararDepartamentos = () => {
   }))
 }
 
-// Actualizar municipios cuando cambia el departamento
 watch(formulario.value.departamento, (newDep) => {
   formulario.value.municipio = ''
   if (newDep && departamentosBase[newDep]) {
@@ -430,7 +489,6 @@ watch(formulario.value.departamento, (newDep) => {
   }
 })
 
-// Filtrar departamentos
 const filterdepartamentos = (val, update) => {
   if (val === '') {
     prepararDepartamentos()
@@ -443,7 +501,6 @@ const filterdepartamentos = (val, update) => {
   update()
 }
 
-// Filtrar municipios
 const filtermunicipios = (val, update) => {
   if (!formulario.value.departamento) return
 
@@ -495,7 +552,6 @@ function eliminarArchivo(index) {
   formulario.value.file_kmz.splice(index, 1);
 }
 
-// Cargar datos si es edición
 onMounted(() => {
   if (props.esEdicion && props.datos) {
     formulario.value = { ...props.datos };
@@ -503,31 +559,33 @@ onMounted(() => {
 });
 
 watch(() => perfilUsuario.value, (newPerfil) => {
+  // Solo resetear si es cliente
   if (newPerfil.toLowerCase() === 'cliente' && !props.esEdicion) {
     formulario.value.pilotoarealizarvuelo = 'No';
     formulario.value.peso_maximo = '';
     formulario.value.tipodecontactovisualconlaua = '';
     formulario.value.vueloespecial = '';
     formulario.value.justificacionvueloespecial = '';
-    formulario.value.tipoOperacion = '';
+    formulario.value.tipoOperacion = null;
     formulario.value.nombrePoligono = '';
-    formulario.value.alturaPoligono = '';
+    formulario.value.altura_poligono = '';
     formulario.value.direccionTramo = '';
     formulario.value.nombreCircunferencia = '';
-    formulario.value.alturaCircunferencia = '';
+    formulario.value.altura_circunferencia = '';
   }
+  // Si NO es cliente, no tocar tipoOperacion
 }, { immediate: true });
-
+watch(() => formulario.value.tipoOperacion, (newValue, oldValue) => {
+  console.log('tipoOperacion cambió de:', oldValue, 'a:', newValue);
+});
 onMounted(() => {
   if (props.esEdicion && props.datos) {
-    // Populate form with existing data
     for (const key in props.datos) {
       if (key in formulario.value) {
         formulario.value[key] = props.datos[key];
       }
     }
   } else if (perfilUsuario.value.toLowerCase() === 'cliente') {
-    // Set default values for new form for cliente
     formulario.value.pilotoarealizarvuelo = 'No';
     formulario.value.tipodeoperacionaerea = '';
   }
@@ -535,6 +593,11 @@ onMounted(() => {
 
 async function guardar() {
   cargando.value = true;
+
+    if (!validarFechasYHoras()) {
+    return;
+  }
+
   try {
     const formData = new FormData();
     
@@ -542,7 +605,7 @@ async function guardar() {
       if (key === 'peso_maximo' && perfilUsuario.value.toLowerCase() === 'cliente') {
         continue;
       }
-      if (key === 'alturaPoligono' && perfilUsuario.value.toLowerCase() === 'cliente') {
+      if (key === 'altura_poligono' && perfilUsuario.value.toLowerCase() === 'cliente') {
         continue;
       }
     if (key === 'direccionTramo' && perfilUsuario.value.toLowerCase() === 'cliente') {
@@ -551,14 +614,14 @@ async function guardar() {
       if (key === 'nombreCircunferencia' && perfilUsuario.value.toLowerCase() === 'cliente') {
         continue;
       }
-       if (key === 'alturaCircunferencia' && perfilUsuario.value.toLowerCase() === 'cliente') {
+       if (key === 'altura_circunferencia' && perfilUsuario.value.toLowerCase() === 'cliente') {
         continue;
       }
       if (key !== 'file_kmz') {
         formData.append(key, formulario.value[key]);
       }
     }
-    
+
     if (formulario.value.file_kmz && formulario.value.file_kmz.length > 0) {
       formulario.value.file_kmz.forEach((file, index) => {
         formData.append('archivos', file);
@@ -567,14 +630,12 @@ async function guardar() {
     }
     
         if (props.esEdicion) {
-      // Make sure we're passing the correct consecutivo value from the formulario object
       const consecutivo = formulario.value.consecutivo;
       formData.append('id', formulario.value.id);
       await useSolicitud.putSolicitud(consecutivo, formData);
     } else {
       await useSolicitud.postSolicitud(formData);
     }
-    
     
     emit('guardar', {
       ...formulario.value,
@@ -588,49 +649,142 @@ async function guardar() {
   }
 }
 
-
-
 const opcionesOperacion = [
   { label: 'Polígono', value: 'poligono' },
   { label: 'Tramo Lineal', value: 'tramo' },
   { label: 'Circunferencia', value: 'circunferencia' },
-]
+];
 
 const columnas = [
   { name: 'item', label: 'ITEM', field: 'item', align: 'left' },
   { name: 'latitud', label: 'LATITUD (N/S)', field: 'latitud' },
   { name: 'longitud', label: 'LONGITUD (W)', field: 'longitud' },
-]
+];
 
-// Polígono
-const filasPoligono = ref([{ item: 1, latitud: '', longitud: '' }])
+const filasPoligono = computed(() => {
+  const filas = [];
+  for (let i = 1; i <= 5; i++) {
+    // Solo mostrar fila si es la primera o si tiene contenido
+    if (i === 1 || formulario.value[`latitud_poligono_${i}`] || formulario.value[`longitud_poligono_${i}`]) {
+      filas.push({ item: i });
+    }
+  }
+  return filas;
+});
+
+const filasTramo = computed(() => {
+  const filas = [];
+  for (let i = 1; i <= 5; i++) {
+    if (i === 1 || formulario.value[`latitud_tramo_${i}`] || formulario.value[`longitud_tramo_${i}`]) {
+      filas.push({ item: i });
+    }
+  }
+  return filas;
+});
+
+const filasCircunferencia = computed(() => {
+  const filas = [];
+  for (let i = 1; i <= 2; i++) {
+    if (i === 1 || formulario.value[`latitud_circunferencia_${i}`] || formulario.value[`longitud_circunferencia_${i}`]) {
+      filas.push({ item: i });
+    }
+  }
+  return filas;
+});
+// Funciones para agregar filas
 const agregarFilaPoligono = () => {
-  if (filasPoligono.value.length < 5) {
-    filasPoligono.value.push({
-      item: filasPoligono.value.length + 1,
-      latitud: '',
-      longitud: '',
-    })
+  const siguienteIndice = filasPoligono.value.length + 1;
+  if (siguienteIndice <= 5) {
+    formulario.value[`latitud_poligono_${siguienteIndice}`] = ' '; // Espacio en lugar de string vacío
+    formulario.value[`longitud_poligono_${siguienteIndice}`] = ' ';
   }
-}
+};
 
-// Tramo
-const filasTramo = ref([{ item: 1, latitud: '', longitud: '' }])
 const agregarFilaTramo = () => {
-  if (filasTramo.value.length < 5) {
-    filasTramo.value.push({
-      item: filasTramo.value.length + 1,
-      latitud: '',
-      longitud: '',
-    })
+  const siguienteIndice = filasTramo.value.length + 1;
+  if (siguienteIndice <= 5) {
+    formulario.value[`latitud_tramo_${siguienteIndice}`] = ' ';
+    formulario.value[`longitud_tramo_${siguienteIndice}`] = ' ';
   }
-}
+};
 
-// Circunferencia
-const filasCircunferencia = ref([{ item: 1, latitud: '', longitud: '' }])
+const agregarFilaCircunferencia = () => {
+  const siguienteIndice = filasCircunferencia.value.length + 1;
+  if (siguienteIndice <= 2) {
+    formulario.value[`latitud_circunferencia_${siguienteIndice}`] = ' ';
+    formulario.value[`longitud_circunferencia_${siguienteIndice}`] = ' ';
+  }
+};
 
 const mostrarFormulario = () => {
-  // Opcional: resetear datos si cambias de tipo
+  console.log('Tipo de operación seleccionado (solo valor):', formulario.value.tipoOperacion);
+  
+  formulario.value.nombrePoligono = '';
+  formulario.value.altura_poligono = '';
+  formulario.value.nombreTramo = '';
+  formulario.value.direccionTramo = '';
+  formulario.value.nombreCircunferencia = '';
+  formulario.value.altura_circunferencia = '';
+  
+// Resetear coordenadas a estado inicial
+for (let i = 2; i <= 5; i++) {
+  formulario.value[`latitud_poligono_${i}`] = '';
+  formulario.value[`longitud_poligono_${i}`] = '';
+  formulario.value[`latitud_tramo_${i}`] = '';
+  formulario.value[`longitud_tramo_${i}`] = '';
+}
+formulario.value[`latitud_circunferencia_2`] = '';
+formulario.value[`longitud_circunferencia_2`] = '';
+};
+
+watch(() => formulario.value.tipoOperacion, (newValue) => {
+  console.log('Cambió tipo de operación a:', newValue);
+});
+
+function validarFechasYHoras() {
+  const { fecha_inicio, fecha_fin, hora_inicio, hora_fin } = formulario.value;
+  
+  // Validar que todos los campos estén completos
+  if (!fecha_inicio || !fecha_fin || !hora_inicio || !hora_fin) {
+    $q.notify({
+      type: "negative",
+      message: "Todos los campos de fecha y hora son obligatorios",
+      position: "bottom-right",
+    });
+    return false;
+  }
+  
+  // Convertir fechas a objetos Date para comparación
+  const fechaInicioObj = new Date(fecha_inicio);
+  const fechaFinObj = new Date(fecha_fin);
+  
+  // Validar que la fecha fin sea mayor o igual que la fecha inicio
+  if (fechaFinObj < fechaInicioObj) {
+    $q.notify({
+      type: "negative",
+      message: "La fecha fin debe ser mayor o igual que la fecha inicio",
+      position: "bottom-right",
+    });
+    return false;
+  }
+  
+    // Convertir horas a minutos para comparación más fácil
+    const [horaInicioHoras, horaInicioMinutos] = hora_inicio.split(':').map(Number);
+    const [horaFinHoras, horaFinMinutos] = hora_fin.split(':').map(Number);
+    
+    const minutosInicio = horaInicioHoras * 60 + horaInicioMinutos;
+    const minutosFin = horaFinHoras * 60 + horaFinMinutos;
+    
+    if (minutosFin <= minutosInicio) {
+      $q.notify({
+        type: "negative",
+        message: "La hora fin debe ser mayor que la hora inicio",
+        position: "bottom-right",
+      });
+      return false;
+    }
+  
+  return true;
 }
 
 </script>

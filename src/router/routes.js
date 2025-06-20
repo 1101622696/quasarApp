@@ -41,13 +41,13 @@ const routes = [
         path: 'PilotosPage', 
         name: 'PilotosPage', 
         component: () => import('../pages/PilotosPage.vue'),
-        meta: { perfiles: ['jefepiloto', 'cliente'] }
+        meta: { perfiles: ['jefepiloto'] }
       },
       { 
         path: 'DronesPage', 
         name: 'DronesPage', 
         component: () => import('../pages/DronesPage.vue'),
-        meta: { perfiles: ['jefepiloto', 'cliente'] }
+        meta: { perfiles: ['jefepiloto'] }
       },
       { 
         path: 'MantenimientoPage', 

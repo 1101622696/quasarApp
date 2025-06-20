@@ -4,10 +4,10 @@
       <div class="q-gutter-md row">
 
       <q-input
+        v-if="!esEdicion"
         v-model="formulario.consecutivo"
         label="Consecutivo de Solicitud aprobada*"
         readonly
-        :rules="[(val) => !!val || 'El consecutivo es obligatorio']"
       />
 
               <div style="width: 300px" class="q-mb-md">
@@ -300,17 +300,6 @@
 import { ref, onMounted, watch } from 'vue';
 import { useStorePrevuelos } from '../stores/prevuelos'
 
-// const props = defineProps({
-//   datos: {
-//     type: Object,
-//     default: () => ({})
-//   },
-//   esEdicion: {
-//     type: Boolean,
-//     default: false
-//   }
-// });
-
 const props = defineProps({
   esEdicion: {
     type: Boolean,
@@ -356,7 +345,6 @@ const itemOptions = ['si', 'no']
 
 watch(() => props.datos, (newData) => {
   if (newData && newData.consecutivo) {
-    // Solo actualizamos el consecutivo, manteniendo el resto del formulario como está
     formulario.value.consecutivo = newData.consecutivo;
   }
 }, { immediate: true });
@@ -366,30 +354,6 @@ onMounted(() => {
     formulario.value.consecutivo = props.datos.consecutivo;
   }
 });
-
-// onMounted(() => {
-//   if (props.esEdicion && props.datos) {
-//     formulario.value = { 
-//       consecutivo: '',
-//       ...props.datos };
-//   }
-// });
-
-// async function guardar() {
-//   cargando.value = true;
-//   try {
-//     const datosAEnviar = {
-//       ...formulario.value,
-//       tipoRegistro: 'prevuelos'
-//     };
-    
-//     emit('guardar', datosAEnviar);
-//   } catch (error) {
-//     console.error('Error al guardar:', error);
-//   } finally {
-//     cargando.value = false;
-//   }
-// }
 
 onMounted(() => {
   console.log('PrevueloForm mounted with props:', {
@@ -401,16 +365,13 @@ onMounted(() => {
     console.log('Raw datos for editing:', props.datos);
     console.log('Datos consecutivo exists:', props.datos.solicitudesaprobadas);
     
-    // Check if consecutivo exists in the data
     if (props.datos.solicitudesaprobadas) {
       console.log('Found consecutivo in datos:', props.datos.solicitudesaprobadas);
     } else {
       console.warn('No consecutivo found in datos for editing!');
       
-      // Check for other potential ID fields
       if (props.datos.id) {
         console.log('Found id in datos, will use as consecutivo:', props.datos.id);
-        // Use id as consecutivo if available
         formulario.value = {
           ...props.datos,
           solicitudesaprobadas: props.datos.id
@@ -422,12 +383,10 @@ onMounted(() => {
       return;
     }
     
-    // Normal assignment if consecutivo exists
     formulario.value = { ...props.datos };
   }
 });
 
-// 4. Modified guardar function with detailed logging
 async function guardar() {
   cargando.value = true;
   try {
@@ -439,11 +398,9 @@ async function guardar() {
       tipoRegistro: 'prevuelos'
     };
     
-    // For editing, make sure we have a valid identifier
     if (props.esEdicion) {
       datosAEnviar.accion = 'editar';
       
-      // Try to ensure we have a valid consecutivo
       if (!datosAEnviar.solicitudesaprobadas && datosAEnviar.id) {
         console.log('Using id as consecutivo for edit operation:', datosAEnviar.id);
         datosAEnviar.solicitudesaprobadas = datosAEnviar.id;

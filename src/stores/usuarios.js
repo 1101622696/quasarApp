@@ -146,37 +146,6 @@ export const useStoreUsuarios = defineStore("Usuarios", () => {
     }
   };
 
-//   const registrarTokenFCM = async (token) => {
-//   try {
-//     loading.value = true;
-//     const response = await axios.post("api/usuarios/registrar-token-fcm", 
-//       { token },
-//       {
-//         headers: {
-//           "x-token": localStorage.getItem('x-token')
-//         }
-//       }
-//     );
-    
-//     Notify.create({
-//       message: 'Notificaciones activadas correctamente',
-//       color: "positive",
-//       position: "bottom",
-//     });
-    
-//     return response.data;
-//   } catch (error) {
-//     Notify.create({
-//       type: 'negative',
-//       message: error.response?.data?.msg || 'Error al registrar notificaciones'
-//     });
-//     console.error(error);
-//     return false;
-//   } finally {
-//     loading.value = false;
-//   }
-// };
-
 const registrarTokenFCM = async (token) => {
   try {
     loading.value = true;

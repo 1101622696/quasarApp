@@ -20,7 +20,6 @@
   option-label="label" 
   label="Seleccione un Piloto" 
   style="background-color: #grey; margin-bottom: 20px" 
-  :disable="tienePilotoAsignado"
 />
       
       <q-input
@@ -90,25 +89,12 @@ const dronesTodo = ref([]);
 const pilotosTodo = ref([]);
 const loading = ref(false);
 
-// const tienePilotoAsignado = computed(() => {
-//   return props.registroSolicitud && props.registroSolicitud.pilotoAsignado;
-// });
-
-// const esFormularioValido = computed(() => {
-//   if (tienePilotoAsignado.value) {
-//     return true;
-//   }
-//   return dronavolar.value && pilotoavolar.value;
-// });
-
 onMounted(async () => {
   await listarDrones();
   await listarPilotos();
   
-  // Determinar la ubicación correcta de los datos
   const datos = props.registroSolicitud.datosOriginales || props.registroSolicitud;
   
-  // Asignar el dron
   if (datos.dronAsignado) {
     dronavolar.value = datos.dronAsignado;
   }
@@ -198,18 +184,15 @@ const organizarPilotos = computed(() => {
 });
 
 const tienePilotoAsignado = computed(() => {
-  // Primero, verificar si el objeto registroSolicitud existe
   if (!props.registroSolicitud) {
     console.log("No hay registroSolicitud");
     return false;
   }
   
-  // Determinar el objeto de datos correcto
   const datos = props.registroSolicitud.datosOriginales || props.registroSolicitud;
   
-  // Log para diagnóstico - ver exactamente qué contiene la propiedad usuario
-  console.log("Valor de usuario:", datos.usuario);
-  console.log("Tipo de usuario:", typeof datos.usuario);
+  // console.log("Valor de usuario:", datos.usuario);
+  // console.log("Tipo de usuario:", typeof datos.usuario);
   
   // Verificar explícitamente si la propiedad usuario existe y no está vacía
   // Usamos la propiedad "in" para verificar la existencia y luego comprobamos si no está vacía
@@ -222,34 +205,47 @@ const tienePilotoAsignado = computed(() => {
   return tieneUsuario;
 });
 
-// Actualización para esFormularioValido
-const esFormularioValido = computed(() => {
-  // Verificar si debe validar el piloto
-  const requierePiloto = !tienePilotoAsignado.value;
+// const esFormularioValido = computed(() => {
+//   const requierePiloto = !tienePilotoAsignado.value;
   
+//   console.log("Estado de validación:", {
+//     tienePilotoAsignado: tienePilotoAsignado.value,
+//     requierePiloto: requierePiloto,
+//     dronSeleccionado: !!dronavolar.value,
+//     pilotoSeleccionado: !!pilotoavolar.value
+//   });
+  
+//   if (requierePiloto) {
+//     return dronavolar.value && pilotoavolar.value;
+//   }
+  
+//   return !!dronavolar.value;
+// });
+
+const esFormularioValido = computed(() => {
   console.log("Estado de validación:", {
     tienePilotoAsignado: tienePilotoAsignado.value,
-    requierePiloto: requierePiloto,
     dronSeleccionado: !!dronavolar.value,
     pilotoSeleccionado: !!pilotoavolar.value
   });
   
-  // Si requiere piloto, validar ambos campos
-  if (requierePiloto) {
+  // Siempre requerir dron
+  // Si no hay piloto asignado O si se seleccionó uno nuevo, requerir piloto
+  if (!tienePilotoAsignado.value) {
+    // No hay piloto asignado, debe seleccionar uno
     return dronavolar.value && pilotoavolar.value;
+  } else {
+    // Hay piloto asignado, solo requerir dron (piloto es opcional)
+    return !!dronavolar.value;
   }
-  
-  // Si no requiere piloto, solo validar el dron
-  return !!dronavolar.value;
 });
 
 async function aprobarSolicitud() {
   try {
-    // Verificar si el formulario es válido antes de proceder
     if (!esFormularioValido.value) {
-      const mensaje = !dronavolar.value 
-        ? 'Por favor seleccione un dron' 
-        : 'Por favor seleccione un piloto';
+const mensaje = !dronavolar.value 
+  ? 'Por favor seleccione un dron' 
+  : 'Por favor seleccione un piloto';
       
       $q.notify({
         type: 'warning',
@@ -260,11 +256,10 @@ async function aprobarSolicitud() {
     
     loading.value = true;
     
-    // Determinar si se debe enviar un piloto
     const numeroserie = dronavolar.value;
-    const piloto = tienePilotoAsignado.value ? null : pilotoavolar.value;
+    // const piloto = tienePilotoAsignado.value ? null : pilotoavolar.value;
+    const piloto = pilotoavolar.value || null;
     
-    // Log para diagnóstico
     console.log("Enviando aprobación:", {
       consecutivo: props.consecutivo,
       dron: numeroserie,

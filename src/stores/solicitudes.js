@@ -11,10 +11,84 @@ export const useStoreSolicitudes = defineStore(
     let solicitudes = ref([])
     const useUsuario = useStoreUsuarios()
 
-    const listarSolicitudes = async () => {
+const obtenerResumenPorEmail = async (email) => {
+  loading.value = true
+  try {
+    let response = await axios.get(`api/solicitudes/resumen/email/${email}`, {
+      headers: {
+        "x-token": localStorage.getItem('x-token')
+      },
+    })
+    console.log('Respuesta resumen por email:', response.data)
+    return response.data 
+  } catch (error) {
+    console.error('No se pudo obtener el resumen por email', error)
+    return { resumen: null }
+  } finally {
+    loading.value = false
+  }
+}
+
+const obtenerResumenPorSolicitante = async (email) => {
+  loading.value = true
+  try {
+    // CORREGIR: faltaba la barra antes de /email
+    let response = await axios.get(`api/solicitudes/resumensolicitante/email/${email}`, {
+      headers: {
+        "x-token": localStorage.getItem('x-token')
+      },
+    })
+    console.log('Respuesta resumen solicitante:', response.data)
+    return response.data // Retornar toda la respuesta
+  } catch (error) {
+    console.error('No se pudo obtener el resumen del solicitante', error)
+    return { resumen: null }
+  } finally {
+    loading.value = false
+  }
+}
+
+const obtenerResumenJefe = async () => {
+  loading.value = true
+  try {
+    let response = await axios.get(`api/solicitudes/resumenjefe`, {
+      headers: {
+        "x-token": localStorage.getItem('x-token')
+      },
+    })
+    console.log('Respuesta resumen jefe:', response.data)
+    return response.data
+  } catch (error) {
+    console.error('No se pudo obtener el resumen del jefe', error)
+    return { resumen: null }
+  } finally {
+    loading.value = false
+  }
+}
+
+    const obtenerEstadoConsecutivo = async (consecutivo) => {
       loading.value = true
       try {
-        let response = await axios.get(`api/solicitudes`, {
+        let response = await axios.get(`api/solicitudes/emailestado/consecutivo/${consecutivo}`, {
+          headers: {
+            // 'x-token': useUsuario.token,
+            "x-token": localStorage.getItem('x-token')
+          },
+        })
+        console.log('Respuesta desde store:', response.data)
+       return response.data
+      } catch (error) {
+        console.error('No se pudo obtener las solicitudes', error)
+        return []
+      } finally {
+        loading.value = false
+      }
+    }
+
+    const obtenerConsecutivosFiltrado = async (estado) => {
+      loading.value = true
+      try {
+        let response = await axios.get(`api/solicitudes/emailestado/estado/${estado}`, {
           headers: {
             // 'x-token': useUsuario.token,
             "x-token": localStorage.getItem('x-token')
@@ -31,30 +105,10 @@ export const useStoreSolicitudes = defineStore(
       }
     }
 
-      const listarSolicitudesPorCliente = async (cliente) => {
-        loading.value = true
-        try {
-          let response = await axios.get(`api/solicitudes/porcliente${cliente}`, {
-            headers: {
-              // 'x-token': useUsuario.token,
-              "x-token": localStorage.getItem('x-token')
-            },
-          })
-          console.log('Respuesta desde store:', response.data)
-          return Array.isArray(response.data) ? response.data : 
-                 (response.data.solicitudes || []);
-        } catch (error) {
-          console.error('No se pudo obtener si la solicitud por cliente', error)
-          return error
-        } finally {
-          loading.value = false
-        }
-      }
-
-    const listarSolicitudesPendientes = async () => {
+    const obtenerBusquedaAvanzada = async () => {
       loading.value = true
       try {
-        let response = await axios.get(`api/solicitudes/pendientes`, {
+        let response = await axios.get(`api/solicitudes/buscar`, {
           headers: {
             // 'x-token': useUsuario.token,
             "x-token": localStorage.getItem('x-token')
@@ -64,293 +118,14 @@ export const useStoreSolicitudes = defineStore(
         return Array.isArray(response.data) ? response.data : 
                (response.data.solicitudes || []);
       } catch (error) {
-        console.error('No se pudo obtener las solicitudes pendientes', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarEsSolicitudPendiente = async (consecutivo) => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/pendientes/verificar${consecutivo}`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener si la solicitud es pendiente', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarSolicitudesAprobadas = async () => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/aprobadas`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener las solicitudes aprobadas', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarSolicitudesEnproceso = async () => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/enproceso`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener las solicitudes enproceso', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarSolicitudesCanceladas = async () => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/canceladas`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener las solicitudes canceladas', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-
-    const listarSolicitudesPendientesEmail = async (email) => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/pendientes/email/${email}`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener las solicitudes pendientes por email', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarSolicitudesAprobadasEmail = async (email) => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/aprobadas/email/${email}`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener las solicitudes aprobadas por email', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarSolicitudesEnprocesoEmail = async (email) => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/enproceso/email/${email}`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener las solicitudes en proceso por email', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarSolicitudesCanceladasEmail = async (email) => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/canceladas/email/${email}`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener las solicitudes pendientes por email', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarSolicitudesEtapasConsecutivo = async (consecutivo) => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/etapas/${consecutivo}`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return response.data
-      } catch (error) {
-        console.error('No se pudo obtener las etapas de esa solicitud', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarSolicitudesConEtapas = async () => {
-      loading.value = true
-      try {
-        let response = await axios.get('api/solicitudes/conetapas/', {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener las etapas de las solicitudes', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarSolicitudesConEtapasPorEmail = async (email) => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/conetapas/email/${email}`, {
-          headers: {
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        // console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener las solicitudes con etapas por email', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarSolicitudesPorEstado = async (estado) => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/estadoproceso/${estado}`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return response.data
-      } catch (error) {
-        console.error('No se pudo obtener el estado de solicitudes', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const listarSolicitudesEmail = async (email) => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/email/${email}`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener las solicitudes por email', error)
-        return error
-      } finally {
-        loading.value = false
-      }
-    }
-
-        const listarSolicitudesPorUltimoEmail = async (email) => {
-      loading.value = true
-      try {
-        let response = await axios.get(`api/solicitudes/ultimoemail/${email}`, {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
-          },
-        })
-        console.log('Respuesta desde store:', response.data)
-        return Array.isArray(response.data) ? response.data : 
-               (response.data.solicitudes || []);
-      } catch (error) {
-        console.error('No se pudo obtener las solicitudes por email', error)
-        return error
+        console.error('No se pudo obtener las solicitudes', error)
+        return []
       } finally {
         loading.value = false
       }
     }
 
     const obtenerdatodessolicitud = async (consecutivo) => {
-      loading.value = true
       try {
         let response = await axios.get(`api/solicitudes/obtenerdatossolicitud/${consecutivo}`, {
           headers: {
@@ -542,30 +317,54 @@ export const useStoreSolicitudes = defineStore(
       }
     }
 
+    const putEnesperaSolicitud =  async (consecutivo) => {
+      try {
+        loading.value = true
+        console.log('Enviando datos al servidor...')
+        const response = await axios.put(`api/solicitudes/enespera/${consecutivo}`,
+          {},
+          {
+          headers: {
+            // 'x-token': useUsuario.token,
+            "x-token": localStorage.getItem('x-token')
+          },
+        })
+        console.log('Respuesta recibida:', response)
+
+        Notify.create({
+          message: 'solicitud puesta en espera',
+          color: 'positive',
+          position: 'bottom',
+        })
+
+        return response
+      } catch (error) {
+        Notify.create({
+          type: 'negative',
+          message: error.response.data.errors[0].msg,
+        })
+        loading.value = true
+        console.log(error)
+        return error
+      } finally {
+        loading.value = false
+      }
+    }
+
     return {
-      listarSolicitudes,
-      listarSolicitudesPorCliente,
-      listarSolicitudesAprobadas,
-      listarSolicitudesPendientes,
-      listarEsSolicitudPendiente,
-      listarSolicitudesEnproceso,
-      listarSolicitudesCanceladas,
-      listarSolicitudesAprobadasEmail,
-      listarSolicitudesPendientesEmail,
-      listarSolicitudesEnprocesoEmail,
-      listarSolicitudesCanceladasEmail,
-      listarSolicitudesEmail,
-      listarSolicitudesPorUltimoEmail,
-      listarSolicitudesEtapasConsecutivo,
-      listarSolicitudesConEtapas,
-      listarSolicitudesConEtapasPorEmail,
-      listarSolicitudesPorEstado,
       obtenerdatodessolicitud,
+      obtenerResumenPorEmail,
+      obtenerResumenPorSolicitante,
+      obtenerResumenJefe,
+      obtenerEstadoConsecutivo,
+      obtenerConsecutivosFiltrado,
+      obtenerBusquedaAvanzada,
       postSolicitud,
       putSolicitud,
       putAprobarSolicitud,
       putDenegarSolicitud,
       putCancelarSolicitud,
+      putEnesperaSolicitud,
       loading,
       solicitudes,
       useUsuario,

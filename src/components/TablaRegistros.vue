@@ -3,66 +3,131 @@
     <q-list bordered padding>
       <q-item
         v-for="registro in registros"
-        :key="registro.id"
-        clickable
-        @click="verDetalles(registro.id, registro.datosOriginales)"
+        :key="registro.consecutivo"
+        class="q-mb-md"
       >
         <q-item-section>
-          <div class="row items-center q-mb-xs">
-            <div class="progress-indicator q-mr-md">
-              <div class="progress-line" :class="{ 'completed': tieneEtapa(registro, 'solicitud') }"></div>
-              <div class="progress-line" :class="{ 'completed': tieneEtapa(registro, 'prevuelo') }"></div>
-              <div class="progress-line" :class="{ 'completed': tieneEtapa(registro, 'postvuelo') }"></div>
-            </div>
-            <q-item-label>{{ registro.empresa }}</q-item-label>
-          </div>
-          <q-item-label caption>{{ tipoRegistroLabel }} {{ registro.id }}</q-item-label>
-          <q-item-label caption v-if="registro.piloto">{{ registro.piloto }}</q-item-label>
-          
-          <q-item-label caption class="text-bold q-mt-xs" :class="getEstadoProcesoClass(registro)">
-            {{ getEstadoProceso(registro) }}
-          </q-item-label>
-        </q-item-section>
-        
-        <q-item-section side>
-          <q-badge :color="getEstadoColor(registro.estado)">{{ registro.estado }}</q-badge>
+          <q-card flat bordered class="full-width">
+            <q-card-section>
+              <div class="row items-center justify-between q-mb-md">
+                <div>
+                  <q-item-label class="text-h6">{{ registro.consecutivo }}</q-item-label>
+                  <q-item-label caption>{{ registro.cliente }}</q-item-label>
+                  <q-item-label caption v-if="registro.piloto">Piloto: {{ registro.piloto }}</q-item-label>
+                  <q-item-label caption v-if="registro.fecha">Fecha: {{ registro.fecha }}</q-item-label>
+                </div>
+                <div>
+                  <q-badge :color="getEstadoGeneralColor(registro.estadoGeneral)">
+                    {{ registro.estadoGeneral }}
+                  </q-badge>
+                </div>
+              </div>
 
+              <div class="row q-gutter-sm">
+                <q-btn
+                  :color="getEstadoColor(registro.estadoSolicitud)"
+                  :text-color="getTextColor(registro.estadoSolicitud)"
+                  :outline="isOutlined(registro.estadoSolicitud)"
+                  @click="verDetalles(registro.consecutivo, 'solicitudes')"
+                  class="col"
+                >
+                  <div class="column items-center">
+                    <q-icon name="description" size="sm" />
+                    <div class="text-caption">Solicitud</div>
+                    <div class="text-caption text-bold">{{ registro.estadoSolicitud }}</div>
+                  </div>
+                </q-btn>
+
+                <q-btn
+                  :color="getEstadoColor(registro.estadoPrevuelo)"
+                  :text-color="getTextColor(registro.estadoPrevuelo)"
+                  :outline="isOutlined(registro.estadoPrevuelo)"
+                  @click="verDetalles(registro.consecutivo, 'prevuelos')"
+                  class="col"
+                >
+                  <div class="column items-center">
+                    <q-icon name="flight_takeoff" size="sm" />
+                    <div class="text-caption">Prevuelo</div>
+                    <div class="text-caption text-bold">{{ registro.estadoPrevuelo }}</div>
+                  </div>
+                </q-btn>
+
+                <q-btn
+                  :color="getEstadoColor(registro.estadoPostVuelo)"
+                  :text-color="getTextColor(registro.estadoPostVuelo)"
+                  :outline="isOutlined(registro.estadoPostVuelo)"
+                  @click="verDetalles(registro.consecutivo, 'postvuelos')"
+                  class="col"
+                >
+                  <div class="column items-center">
+                    <q-icon name="flight_land" size="sm" />
+                    <div class="text-caption">Postvuelo</div>
+                    <div class="text-caption text-bold">{{ registro.estadoPostVuelo }}</div>
+                  </div>
+                </q-btn>
+              </div>
+
+              <div class="row justify-end q-mt-sm">
+                <AccionesRegistro 
+                  :registro="registro" 
+                  :tipoRegistro="tipoProcesoActivo"
+                  :perfilUsuario="perfilUsuario"
+                  @editar="abrirEdicion"
+                  @aprobar="aprobarRegistro"
+                  @cancelar="cancelarRegistro"
+                  @ir-prevuelo="irAPrevuelo"
+                  @ir-postvuelo="irAPostvuelo"
+                  @aprobar-directo="aprobarDirecto"
+                  @denegar-directo="denegarDirecto"
+                  @cancelar-directo="cancelarDirecto"
+                  @enespera-directo="enesperaDirecto"
+                />
+              </div>
+            </q-card-section>
+          </q-card>
         </q-item-section>
       </q-item>
     </q-list>
-    
 
-<VistaDetalle
-  v-model:mostrar="mostrarDetalles"
-  :registro="registroSeleccionado"
-  :tipoRegistro="tipoRegistro"
-  :perfilUsuario="perfilUsuario"
-  @editar="abrirEdicion"
-  @aprobar="aprobarRegistro"
-  @cancelar="cancelarRegistro"
-  @ir-prevuelo="irAPrevuelo"
-  @ir-postvuelo="irAPostvuelo"
-  @aprobar-directo="aprobarDirecto"
-  @denegar-directo="denegarDirecto"
-  @cancelar-directo="cancelarDirecto"
-/>
+    <VistaDetalle
+      v-model:mostrar="mostrarDetalles"
+      :registro="registroSeleccionado"
+      :tipoRegistro="tipoProcesoSeleccionado"
+      :perfilUsuario="perfilUsuario"
+      @editar="abrirEdicion"
+      @aprobar="aprobarRegistro"
+      @cancelar="cancelarRegistro"
+      @ir-prevuelo="irAPrevuelo"
+      @ir-postvuelo="irAPostvuelo"
+      @aprobar-directo="aprobarDirecto"
+      @denegar-directo="denegarDirecto"
+      @cancelar-directo="cancelarDirecto"
+      @enespera-directo="handleEnesperaDirecto"
+    />
 
-    
     <FormularioEdicion
       v-model:mostrar="mostrarFormulario"
-      :tipoRegistro="tipoRegistro"
+      :tipoRegistro="tipoFormulario"
       :accion="accionFormulario"
       :datos="datosFormulario"
       @guardar="guardarFormulario"
     />
-
   </div>
 </template>
 
 <script setup>
+
 import { ref, defineProps, defineEmits, computed } from 'vue';
 import VistaDetalle from './VistaDetalle.vue';
 import FormularioEdicion from './FormularioEdicion.vue';
+
+import { useStorePrevuelos } from '../stores/prevuelos'
+import { useStorePostvuelos } from '../stores/postvuelos'
+import { useStoreSolicitudes } from '../stores/solicitudes'
+
+const usePrevuelo = useStorePrevuelos()
+const usePostvuelo = useStorePostvuelos()
+const useSolicitud = useStoreSolicitudes()
 
 const props = defineProps({
   registros: {
@@ -79,86 +144,109 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['ver-detalles', 'editar', 'aprobar-registro', 'cancelar-registro', 'guardar-formulario', 'cambio-tab', 'aprobar-directo', 'denegar-directo', 'cancelar-directo']);
-const mostrarDetalles = ref(false);
-const mostrarFormulario = ref(false);
-const registroSeleccionado = ref(null);
-const datosFormulario = ref({});
-const accionFormulario = ref('crear');
+const emit = defineEmits(['ver-detalles', 'editar', 'aprobar-registro', 'cancelar-registro', 'guardar-formulario', 'cambio-tab', 'aprobar-directo', 'denegar-directo', 'cancelar-directo', 'enespera-directo']);
 
-const tipoRegistroLabel = computed(() => {
-  const labels = {
-    'solicitudes': 'Solicitud',
-    'prevuelos': 'Prevuelo',
-    'postvuelos': 'Postvuelo'
-  };
-  return labels[props.tipoRegistro] || props.tipoRegistro;
+const mostrarDetalles = ref(false)
+const mostrarFormulario = ref(false)
+const registroSeleccionado = ref(null)
+const tipoProcesoSeleccionado = ref('solicitudes')
+const tipoProcesoActivo = ref('solicitudes')
+const datosFormulario = ref({})
+const accionFormulario = ref('crear')
+
+const tipoFormulario = computed(() => {
+  if (datosFormulario.value?.tipoRegistro) {
+    return datosFormulario.value.tipoRegistro;
+  }
+  if (registroSeleccionado.value?.tipoRegistro) {
+    return registroSeleccionado.value.tipoRegistro;
+  }
+  return props.tipoRegistro || 'solicitudes';
 });
 
 function getEstadoColor(estado) {
   const colores = {
-    'Aprobada': 'positive',
     'Aprobado': 'positive',
-    'Pendiente': 'warning',
-    'En proceso': 'info',
-  };
-  return colores[estado] || 'grey';
+    'Pendiente': 'warning', 
+    'No iniciado': 'grey-4',
+    'Cancelado': 'negative',
+    'Completado': 'positive',
+    'En proceso': 'info'
+  }
+  return colores[estado] || 'grey-4'
 }
 
-function tieneEtapa(registro, etapa) {
-  if (etapa === 'solicitud') {
-    return true; 
-  } else if (etapa === 'prevuelo') {
-    return registro.datosOriginales && registro.datosOriginales.prevueloAprobado;
-  } else if (etapa === 'postvuelo') {
-    return registro.datosOriginales && registro.datosOriginales.postvueloAprobado;
+function getTextColor(estado) {
+  const textColors = {
+    'No iniciado': 'grey-8',
+    'Aprobado': 'white',
+    'Pendiente': 'white',
+    'Cancelado': 'white',
+    'Completado': 'white',
+    'En proceso': 'white'
   }
-  return false;
+  return textColors[estado] || 'grey-8'
 }
 
-function getEstadoProceso(registro) {
-  if (registro.estado === 'Cancelado' || (registro.datosOriginales && registro.datosOriginales.estado === 'Cancelado')) {
-    return 'Cancelado';
-  }
-  
-  if (registro.datosOriginales && registro.datosOriginales.estadoProceso) {
-    return registro.datosOriginales.estadoProceso;
-  }
-  
-  if (tieneEtapa(registro, 'solicitud') && tieneEtapa(registro, 'prevuelo') && tieneEtapa(registro, 'postvuelo')) {
-    return 'Proceso Completado';
-  } else if (tieneEtapa(registro, 'solicitud') && tieneEtapa(registro, 'prevuelo')) {
-    return 'Falta por aprobar postvuelo';
-  } else if (tieneEtapa(registro, 'solicitud') && !tieneEtapa(registro, 'prevuelo')) {
-    return 'Falta realizar prevuelo';
-  } else if (registro.estado === 'Aprobada' || registro.estado === 'Aprobado') {
-    return 'Solicitud aprobada, pendiente de prevuelo';
-  } else {
-    return 'Pendiente de aprobación';
-  }
+function isOutlined(estado) {
+  return estado === 'No iniciado'
 }
 
-function getEstadoProcesoClass(registro) {
-  const estado = getEstadoProceso(registro);
-  
-  if (estado === 'Cancelado') {
-    return 'text-negative';
-  } else if (estado === 'Proceso Completado') {
-    return 'text-positive';
-  } else if (estado === 'Falta por aprobar postvuelo' || estado === 'Solicitud aprobada, pendiente de prevuelo') {
-    return 'text-warning';
-  } else {
-    return 'text-info';
-  }
+function getEstadoGeneralColor(estadoGeneral) {
+  if (estadoGeneral.includes('Pendiente')) return 'warning'
+  if (estadoGeneral.includes('no iniciado')) return 'grey'
+  if (estadoGeneral.includes('Completado')) return 'positive'
+  if (estadoGeneral.includes('Cancelado')) return 'negative'
+  return 'info'
 }
 
-function verDetalles(id, datosOriginales) {
-  const registro = props.registros.find(r => r.id === id) || {};
-  registroSeleccionado.value = {
-    ...registro,
-    datosOriginales: datosOriginales.datosOriginales || datosOriginales
-  };
-  mostrarDetalles.value = true;
+async function verDetalles(consecutivo, tipoProceso) {
+  try {
+    tipoProcesoSeleccionado.value = tipoProceso;
+    
+    const registro = props.registros.find(r => r.consecutivo === consecutivo);
+    if (registro) {
+      const detallesCompletos = await new Promise((resolve) => {
+        emit('ver-detalles', consecutivo, tipoProceso);
+        
+        setTimeout(async () => {
+          let resultado;
+          switch (tipoProceso) {
+            case 'solicitudes':
+              resultado = await useSolicitud.obtenerdatodessolicitud(consecutivo);
+              break;
+            case 'prevuelos':
+              resultado = await usePrevuelo.obtenerdatodeprevuelo(consecutivo);
+              break;
+            case 'postvuelos':
+              resultado = await usePostvuelo.obtenerdatodepostvuelo(consecutivo);
+              break;
+          }
+          resolve(resultado);
+        }, 100);
+      });
+      
+      console.log('Detalles completos obtenidos:', detallesCompletos);
+      
+      registroSeleccionado.value = {
+        consecutivo: registro.consecutivo,
+        datosOriginales: detallesCompletos,
+        tipoRegistro: tipoProceso,
+        ...registro 
+      };
+      
+      console.log('Registro seleccionado final:', {
+  consecutivo: registroSeleccionado.value.consecutivo,
+  tipoRegistro: registroSeleccionado.value.tipoRegistro,
+  datosOriginales: registroSeleccionado.value.datosOriginales,
+  registroCompleto: registroSeleccionado.value
+});
+
+      mostrarDetalles.value = true;
+    }
+  } catch (error) {
+    console.error('Error al ver detalles:', error);
+  }
 }
 
   function aprobarRegistro(registro) {
@@ -171,78 +259,58 @@ function verDetalles(id, datosOriginales) {
     emit('cancelar-registro', registro);
   }
 
-function irAPrevuelo(id) {
-  const solicitud = props.registros.find(r => r.id === id);
+function irAPrevuelo(consecutivo) {
+  const solicitud = props.registros.find(r => r.consecutivo === consecutivo);
   
   if (solicitud) {
     datosFormulario.value = { 
-      consecutivo: solicitud.id || solicitud.consecutivo, 
-      solicitudId: id,
+      consecutivo: consecutivo,
+      solicitudId: consecutivo,
       tipoRegistro: 'prevuelos'  
     };
     
     accionFormulario.value = 'crear';
+    tipoFormulario.value = 'prevuelos'; 
     mostrarFormulario.value = true;
-    emit('ir-prevuelo', id, datosFormulario.value);
+    emit('ir-prevuelo', consecutivo, datosFormulario.value);
   } else {
-    console.error('No se encontró la solicitud con ID:', id);
+    console.error('No se encontró la solicitud con consecutivo:', consecutivo);
   }
 }
 
-function irAPostvuelo(id) {
-  const prevuelo = props.registros.find(r => r.id === id);
+function irAPostvuelo(consecutivo) {
+  const prevuelo = props.registros.find(r => r.consecutivo === consecutivo);
   
   if (prevuelo) {
     datosFormulario.value = { 
-      consecutivo: prevuelo.id || prevuelo.consecutivo, 
-      prevueloId: id,
+      consecutivo: consecutivo, 
+      prevueloId: consecutivo,
       tipoRegistro: 'postvuelos'  
     };
     
     accionFormulario.value = 'crear';
+    tipoFormulario.value = 'postvuelos'; 
     mostrarFormulario.value = true;
-    emit('ir-postvuelo', id, datosFormulario.value);
+    emit('ir-postvuelo', consecutivo, datosFormulario.value);
   } else {
-    console.error('No se encontró el prevuelo con ID:', id);
+    console.error('No se encontró el prevuelo con consecutivo:', consecutivo);
   }
 }
-
-// function abrirEdicion(registro) {
-//   const datosOriginales = registro.datosOriginales || registro;
-  
-//   if (datosOriginales.estado === 'Aprobado' || 
-//       datosOriginales.prevueloAprobado === true ||
-//       datosOriginales.postvueloAprobado === true) {
-//     console.error('No se puede editar un registro ya aprobado');
-//     return;
-//   }
-  
-//   registroSeleccionado.value = registro;
-//   datosFormulario.value = datosOriginales;
-//   accionFormulario.value = 'editar';
-//   mostrarFormulario.value = true;
-//   emit('editar', registro);
-// }
-
 
 function abrirEdicion(registro) {
   const datosOriginales = registro.datosOriginales || registro;
   
-  // Modificar la lógica para permitir editar postvuelos pendientes
   if (props.tipoRegistro === 'postvuelos') {
-    // Para postvuelos, solo bloquear si está aprobado el postvuelo
     if (datosOriginales.postvueloAprobado === true) {
       console.error('No se puede editar un postvuelo ya aprobado');
       return;
     }
   } else if (props.tipoRegistro === 'prevuelos') {
-    // Para prevuelos, solo bloquear si está aprobado el prevuelo
     if (datosOriginales.prevueloAprobado === true) {
       console.error('No se puede editar un prevuelo ya aprobado');
       return;
     }
   } else {
-    // Para solicitudes, solo bloquear si está aprobada la solicitud
     if (datosOriginales.estado === 'Aprobado' || datosOriginales.estado === 'Aprobada') {
       console.error('No se puede editar una solicitud ya aprobada');
       return;
@@ -252,6 +320,11 @@ function abrirEdicion(registro) {
   registroSeleccionado.value = registro;
   datosFormulario.value = datosOriginales;
   accionFormulario.value = 'editar';
+  
+  tipoFormulario.value = registro.tipoRegistro || props.tipoRegistro;
+  
+  console.log('abrirEdicion - tipoFormulario.value:', tipoFormulario.value);
+  
   mostrarFormulario.value = true;
   emit('editar', registro);
 }
@@ -270,6 +343,11 @@ function denegarDirecto(data) {
 function cancelarDirecto(data) {
   emit('cancelar-directo', data);
 }
+
+function enesperaDirecto(data) {
+  emit('enespera-directo', data);
+}
+
 </script>
 
 <style scoped>

@@ -32,14 +32,14 @@ export const linksList = [
         caption: 'Crear y ver pilotos',
         icon: 'las la-user-tie',
         link: 'PilotosPage',
-        perfiles: ['jefepiloto', 'cliente']
+        perfiles: ['jefepiloto']
       },
       {
         title: 'Drones',
         caption: 'Crear y ver Drones',
         icon: 'las la-fighter-jet',
         link: 'DronesPage',
-        perfiles: ['jefepiloto', 'cliente']
+        perfiles: ['jefepiloto']
       },
       {
         title: 'Looker',

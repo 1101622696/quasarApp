@@ -6,12 +6,7 @@
       </q-card-section>
       
       <q-card-section class="q-pt-none" v-if="detalles">
-<!-- <div class="row q-mb-md q-gutter-md items-start" v-for="(valor, campo) in camposFiltrados" :key="campo">
-  <div class="col-4 text-weight-bold">{{ formatearCampo(campo) }}:</div>
-  <div class="col-8" :class="resaltarValor(campo, valor)">
-    {{ valor }}
-  </div>
-</div> -->
+
 <div class="row q-mb-md" v-for="(valor, campo) in camposFiltrados" :key="campo">
   <div class="col-4 text-weight-bold">{{ formatearCampo(campo) }}:</div>
   <div class="col-8" :class="resaltarValor(campo, valor)">
@@ -24,13 +19,14 @@
   :tipoRegistro="tipoRegistro"
   :perfilUsuario="perfilUsuario"
   @editar="$emit('editar', registro)" 
-  @aprobar="$emit('aprobar', registro.id)"
-  @cancelar="$emit('cancelar', registro.id)"
-  @ir-prevuelo="$emit('ir-prevuelo', registro.id)"
-  @ir-postvuelo="$emit('ir-postvuelo', registro.id)"
+  @aprobar="$emit('aprobar', registro.consecutivo)"
+  @cancelar="$emit('cancelar', registro.consecutivo)"
+  @ir-prevuelo="$emit('ir-prevuelo', registro.consecutivo)"
+  @ir-postvuelo="$emit('ir-postvuelo', registro.consecutivo)"
   @aprobar-directo="$emit('aprobar-directo', $event)"
   @denegar-directo="$emit('denegar-directo', $event)"
   @cancelarSolicitud="$emit('cancelar-directo', $event)"
+  @enesperaSolicitud="$emit('enespera-directo', $event)"
 />
 
         </div>
@@ -66,14 +62,18 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:mostrar', 'editar', 'aprobar', 'cancelar', 'ir-prevuelo', 'ir-postvuelo', 'aprobar-directo', 'denegar-directo', 'cancelar-directo']);
+const emit = defineEmits(['update:mostrar', 'editar', 'aprobar', 'cancelar', 'ir-prevuelo', 'ir-postvuelo', 'aprobar-directo', 'denegar-directo', 'cancelar-directo', 'enespera-directo']);
 
 const mostrarDialog = computed({
   get: () => props.mostrar,
   set: (value) => emit('update:mostrar', value)
 });
 
-const detalles = computed(() => props.registro.datosOriginales || props.registro);
+const detalles = computed(() => {
+  const datos = props.registro.datosOriginales || props.registro;
+  console.log('VistaDetalle - datos a mostrar:', datos);
+  return datos;
+});
 
 const tipoRegistroLabel = computed(() => {
   const labels = {
@@ -88,15 +88,15 @@ const camposFiltrados = computed(() => {
   const resultado = {};
   if (!detalles.value) return resultado;
 
-  const camposExcluidos = [
-    'datosOriginales', 'id', '_id', '__v',
-    'solicitudExiste', 'solicitudAprobada',
-    'prevueloExiste', 'prevueloAprobado',
-    'postvueloExiste', 'postvueloAprobado'
+  // Campos básicos que siempre se excluyen
+  const camposBasicosExcluidos = [
+    'datosOriginales', 'id', '_id', '__v', 'tipoRegistro'
   ];
 
+  const todosExcluidos = [...camposBasicosExcluidos];
+
   Object.entries(detalles.value).forEach(([clave, valor]) => {
-    if (!camposExcluidos.includes(clave) && typeof valor !== 'object') {
+    if (!todosExcluidos.includes(clave) && typeof valor !== 'object') {
       resultado[clave] = valor;
     }
   });
@@ -104,14 +104,12 @@ const camposFiltrados = computed(() => {
   return resultado;
 });
 
-
 function formatearCampo(campo) {
   const etiquetas = etiquetasPorTipo[props.tipoRegistro] || {};
   if (etiquetas[campo]) {
     return etiquetas[campo];
   }
 
-  // Fallback: intenta hacer legible el nombre de campo por defecto
   return campo
     .replace(/([A-Z])/g, ' $1')
     .replace(/^./, (str) => str.toUpperCase())
@@ -123,7 +121,7 @@ function formatearCampo(campo) {
 
 function resaltarValor(campo, valor) {
   if (typeof valor === 'string' && valor.trim().toLowerCase() === 'no') {
-    return 'text-negative'; // clase de Quasar para texto rojo
+    return 'text-negative'; 
   } else 
   return '';
 }
@@ -143,7 +141,13 @@ const etiquetasPorTipo = {
     nombredelcoordinador: 'Solicita',
     correodelcoordinador: 'Correo del solicitante',
     estadoProceso: 'Fase del Proceso',
-    
+    sucursale_puesto: 'Sucursal/Puesto',
+    zonadelvuelo: 'Zona del vuelo',
+    areadelvuelo: 'Area del vuelo',
+    clasificaciondezona: 'Clasificacion de la zona',
+    observacioensdelazona: 'Observaciones',
+    duracionsolicitud: 'Duracion estimada',
+  
   },
   prevuelos: {
     useremail: 'Correo del usuario',

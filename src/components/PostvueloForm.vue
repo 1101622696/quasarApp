@@ -4,10 +4,10 @@
       <div class="q-gutter-md row">
 
       <q-input
+        v-if="!esEdicion"
         v-model="formulario.consecutivo"
         label="Consecutivo de Solicitud aprobada*"
         readonly
-        :rules="[(val) => !!val || 'El consecutivo es obligatorio']"
       />
 
               <div class="q-pa-md">
@@ -150,12 +150,39 @@ onMounted(() => {
   if (props.esEdicion && props.datos) {
     formulario.value = { 
       consecutivo: '',
-      ...props.datos };
+      "consecutivo-solicitud": '',
+      horaInicio: '',
+      horaFin: '',
+      distanciaRecorrida: '',
+      alturaMaxima: '',
+      incidentes: '',
+      propositoAlcanzado: '',
+      observacionesVuelo: '',
+      adjuntospostvuelo: [], // Inicializar como array vacío
+      ...props.datos 
+    };
+    
+    // Asegurar que adjuntospostvuelo sea siempre un array
+    if (!Array.isArray(formulario.value.adjuntospostvuelo)) {
+      formulario.value.adjuntospostvuelo = [];
+    }
+    
+    console.log("Datos cargados en formulario postvuelo:", {
+      "consecutivo-solicitud": formulario.value["consecutivo-solicitud"],
+      "datos originales": props.datos
+    });
+  } else if (props.datos && props.datos.consecutivo) {
+    formulario.value.consecutivo = props.datos.consecutivo;
   }
 });
 
 function manejarSeleccionArchivos(files) {
   if (files) {
+    // Asegurar que adjuntospostvuelo existe como array
+    if (!formulario.value.adjuntospostvuelo) {
+      formulario.value.adjuntospostvuelo = [];
+    }
+    
     if (Array.isArray(files)) {
       files.forEach(file => {
         const existeArchivo = formulario.value.adjuntospostvuelo.some(a => 
@@ -183,66 +210,10 @@ function eliminarArchivo(index) {
   formulario.value.adjuntospostvuelo.splice(index, 1);
 }
 
-// onMounted(() => {
-//   if (props.esEdicion && props.datos) {
-//     formulario.value = { ...props.datos };
-//   }
-// });
-
-// async function guardar() {
-//   cargando.value = true;
-//   try {
-//     const formData = new FormData();
-    
-//     for (const key in formulario.value) {
-//       if (key !== 'adjuntospostvuelo') {
-//         formData.append(key, formulario.value[key]);
-//       }
-//     }
-    
-//     if (formulario.value.adjuntospostvuelo && formulario.value.adjuntospostvuelo.length > 0) {
-//       formulario.value.adjuntospostvuelo.forEach((file, index) => {
-//         formData.append('archivos', file);
-//         console.log(`Adjuntando archivo #${index + 1}`);
-//       });
-//     }
-    
-//     formData.append('tipoRegistro', 'postvuelos');
-    
-//     let respuesta;
-    
-//     if (props.esEdicion) {
-//       formData.append('id', formulario.value.id);
-//       respuesta = await usePostvuelo.putPostvuelo(formData);
-//     } else {
-//       respuesta = await usePostvuelo.postPostvuelo(formData);
-//     }
-    
-//     emit('guardar', {
-//       id: respuesta.id || formulario.value.id, // Usar el ID de la respuesta si está disponible
-//       exito: true,
-//       mensaje: props.esEdicion ? 'Postvuelo actualizado correctamente' : 'Postvuelo creado correctamente',
-//       accion: props.esEdicion ? 'editar' : 'crear'
-//     });
-    
-//   } catch (error) {
-//     console.error('Error al guardar:', error);
-//     emit('guardar', {
-//       exito: false,
-//       mensaje: `Error al ${props.esEdicion ? 'actualizar' : 'crear'} el postvuelo`,
-//       error: error.message
-//     });
-//   } finally {
-//     cargando.value = false;
-//   }
-// }
-
 onMounted(() => {
   if (props.esEdicion && props.datos) {
-    // Clonar el objeto de datos para evitar mutaciones inesperadas
     formulario.value = { ...props.datos };
     
-    // Asegurar que tengamos el consecutivo-solicitud
     console.log("Datos cargados en formulario postvuelo:", {
       "consecutivo-solicitud": formulario.value["consecutivo-solicitud"],
       "datos originales": props.datos
@@ -250,60 +221,54 @@ onMounted(() => {
   }
 });
 
-// En la función guardar del PostvueloForm.vue
+
 async function guardar() {
   cargando.value = true;
   try {
     const formData = new FormData();
     
-    // Asegurar que consecutivo-solicitud se incluya en los datos
     for (const key in formulario.value) {
       if (key !== 'adjuntospostvuelo') {
         formData.append(key, formulario.value[key]);
-        console.log(`Agregando campo ${key}: ${formulario.value[key]}`); // Log para depuración
+        console.log(`Agregando campo ${key}: ${formulario.value[key]}`);
       }
     }
     
     if (formulario.value.adjuntospostvuelo && formulario.value.adjuntospostvuelo.length > 0) {
       formulario.value.adjuntospostvuelo.forEach((file, index) => {
         formData.append('archivos', file);
-        console.log(`Adjuntando archivo #${index + 1}`);
+        console.log(`Adjuntando archivo #${index + 1}: ${file.name}`);
       });
     }
     
     formData.append('tipoRegistro', 'postvuelos');
     
-    let respuesta;
-    
+    // CAMBIO: Solo emitir el evento con FormData, sin llamar al store
     if (props.esEdicion) {
-      // Asegurar que pasamos el consecutivo-solicitud para edición
       const consecutivoSolicitud = formulario.value["consecutivo-solicitud"];
       console.log("Editando postvuelo con consecutivo-solicitud:", consecutivoSolicitud);
       
-      // Enviar a guardar con el consecutivo-solicitud
       emit('guardar', {
-        id: formulario.value.id,
+        formData: formData, // Enviamos el FormData
+        consecutivo: formulario.value.consecutivo,
         "consecutivo-solicitud": consecutivoSolicitud,
-        ...formulario.value,
-        exito: true,
-        accion: 'editar'
+        accion: 'editar',
+        tipoRegistro: 'postvuelos'
       });
     } else {
-      // Caso de creación (no modificado)
-      respuesta = await usePostvuelo.postPostvuelo(formData);
       emit('guardar', {
-        id: respuesta.id || formulario.value.id,
-        exito: true,
-        mensaje: 'Postvuelo creado correctamente',
-        accion: 'crear'
+        formData: formData, // Enviamos el FormData
+        consecutivo: formulario.value.consecutivo,
+        accion: 'crear',
+        tipoRegistro: 'postvuelos'
       });
     }
     
   } catch (error) {
-    console.error('Error al guardar:', error);
+    console.error('Error al preparar datos:', error);
     emit('guardar', {
       exito: false,
-      mensaje: `Error al ${props.esEdicion ? 'actualizar' : 'crear'} el postvuelo`,
+      mensaje: `Error al preparar datos del postvuelo`,
       error: error.message
     });
   } finally {
