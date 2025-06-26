@@ -249,31 +249,38 @@ const obtenerResumenJefe = async () => {
       }
     }
 
-    const putDenegarSolicitud =  async (consecutivo) => {
+        const putDenegarSolicitud = async (consecutivo, numeroserie = '', piloto, notas = '') => {
       try {
         loading.value = true
         console.log('Enviando datos al servidor...')
-        const response = await axios.put(`api/solicitudes/denegar/${consecutivo}`,
-          {},
+        
+        const response = await axios.put(
+          `api/solicitudes/denegar/${consecutivo}`,
           {
-          headers: {
-            // 'x-token': useUsuario.token,
-            "x-token": localStorage.getItem('x-token')
+            numeroserie,
+            piloto,
+            notas
           },
-        })
+          {
+            headers: {
+              "x-token": localStorage.getItem('x-token')
+            },
+          }
+        )
+        
         console.log('Respuesta recibida:', response)
-
+        
         Notify.create({
-          message: 'solicitud denegada',
+          message: 'Solicitud denegada correctamente',
           color: 'positive',
           position: 'bottom',
         })
-
+        
         return response
       } catch (error) {
         Notify.create({
           type: 'negative',
-          message: error.response.data.errors[0].msg,
+          message: error.response?.data?.errors?.[0]?.msg || 'Error al aprobar la solicitud',
         })
         loading.value = true
         console.log(error)
@@ -283,12 +290,14 @@ const obtenerResumenJefe = async () => {
       }
     }
 
-    const putCancelarSolicitud =  async (consecutivo) => {
+    const putCancelarSolicitud =  async (consecutivo, notas = '') => {
       try {
         loading.value = true
         console.log('Enviando datos al servidor...')
         const response = await axios.put(`api/solicitudes/cancelar/${consecutivo}`,
-          {},
+          {
+            notas
+          },
           {
           headers: {
             // 'x-token': useUsuario.token,

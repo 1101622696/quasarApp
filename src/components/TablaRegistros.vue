@@ -102,7 +102,7 @@
       @aprobar-directo="aprobarDirecto"
       @denegar-directo="denegarDirecto"
       @cancelar-directo="cancelarDirecto"
-      @enespera-directo="handleEnesperaDirecto"
+      @enespera-directo="enesperaDirecto"
     />
 
     <FormularioEdicion
@@ -345,9 +345,9 @@ function cancelarDirecto(data) {
 }
 
 function enesperaDirecto(data) {
+  console.log('enesperaDirecto en TablaRegistros:', data); // Para debug
   emit('enespera-directo', data);
 }
-
 </script>
 
 <style scoped>

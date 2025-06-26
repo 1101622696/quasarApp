@@ -1,7 +1,11 @@
 <template>
   <div>
     <div class="q-pa-md">
-      <div class="q-gutter-md row">
+      <div class="q-pa-lg">
+     
+      <q-banner class="bg-grey-2 text-primary q-mb-md" rounded>
+        <strong>Checklist Prevuelo - UAV</strong>
+      </q-banner>
 
       <q-input
         v-if="!esEdicion"
@@ -10,9 +14,16 @@
         readonly
       />
 
+<q-separator spaced />
+
+      <q-banner class="text-indigo text-bold q-my-sm" dense>
+        Espacio Aéreo y Entorno
+      </q-banner>
+
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item1"
                   label="1. Espacio Aéreo (Sin restricción o vuelo autorizado):"
                   :options="itemOptions"
@@ -25,6 +36,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item2"
                   label="2. Espacio Aéreo (Identificar obstrucciones cerca del patrón de vuelo):"
                   :options="itemOptions"
@@ -37,6 +49,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item3"
                   label="3. Meteorología (Visibilidad ≥ 3 millas, Viento ≤ 38km/h, Sin lluvia):"
                   :options="itemOptions"
@@ -46,9 +59,16 @@
                 </q-tooltip>
               </div>
 
+<q-separator spaced />
+
+      <q-banner class="text-indigo text-bold q-my-sm" dense>
+        Estructura, Batería
+      </q-banner>
+
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item4"
                   label="4. Estructura/Hélices UAS (Sin defectos estructurales visibles):"
                   :options="itemOptions"
@@ -61,6 +81,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item5"
                   label="5. Batería/s UAS (Suficientes para el vuelo, ≥ 80%):"
                   :options="itemOptions"
@@ -73,6 +94,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item6"
                   label="6. Batería del dispositivo de pantalla (≥ 80%):"
                   :options="itemOptions"
@@ -85,6 +107,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item7"
                   label="7. Tarjetas de Memoria (Instaladas, suficiente espacio):"
                   :options="itemOptions"
@@ -97,6 +120,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item8"
                   label="8. Observador (Presente, briefing completo):"
                   :options="itemOptions"
@@ -106,9 +130,16 @@
                 </q-tooltip>
               </div>
 
+<q-separator spaced />
+
+      <q-banner class="text-indigo text-bold q-my-sm" dense>
+        Datos del dron
+      </q-banner>
+
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item9"
                   label="9. Bloqueo del Gimbal de la cámara (Removido):"
                   :options="itemOptions"
@@ -121,6 +152,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item10"
                   label="10. Dispositivo de Pantalla (Encendido):"
                   :options="itemOptions"
@@ -133,6 +165,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item11"
                   label="11. Control Remoto (Encendido):"
                   :options="itemOptions"
@@ -143,6 +176,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item12"
                   label="12. UAS (Encendido):"
                   :options="itemOptions"
@@ -153,6 +187,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item13"
                   label="13. Luces de estado del UAS (Flashing VERDE):"
                   :options="itemOptions"
@@ -165,6 +200,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item14"
                   label="14. Chequeo de Cámara (Vista normal de cámara FPV):"
                   :options="itemOptions"
@@ -177,6 +213,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item15"
                   label="15. Calibración Rumbo/Compass (Compass calibrado para la ubicación actual)"
                   :options="itemOptions"
@@ -189,6 +226,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item16"
                   label="16. Límites de vuelo programados (Altitud. <=120 metros, Distancia. <=500/750):"
                   :options="itemOptions"
@@ -201,6 +239,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item17"
                   label="17. Flight Mode Set to GPS (Modo del control en “P”,estatus en pantalla VERDE-RTF)"
                   :options="itemOptions"
@@ -213,6 +252,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item18"
                   label="18. Ubicación de despegue (Libre de obstáculos >=8 metros de radio):"
                   :options="itemOptions"
@@ -225,11 +265,11 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item19"
                   label="Inicio de motores de la UA (Los motores deben iniciar en mínimas RPM’s sin sonidos anormales):"
                   :options="itemOptions"
                   style="width: 300px"
-                  class="q-mb-md"
                 />
                 <q-tooltip anchor="bottom middle" self="top middle">
                   Inicio de motores de la UA (Los motores deben iniciar en mínimas RPM’s sin sonidos
@@ -254,6 +294,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item21"
                   label="Control de Desplazamiento (Controles de vuelo y del Gimbal con respuesta normal):"
                   :options="itemOptions"
@@ -266,6 +307,7 @@
               <div style="width: 300px" class="q-mb-md">
                 <q-select
                   filled
+                  class="col-12 col-md-6"
                   v-model="formulario.item22"
                   label="Telemetría de vuelo (Telemetría normal (Bat, Alt, Dist., etc.)):"
                   :options="itemOptions"

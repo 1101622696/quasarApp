@@ -111,6 +111,8 @@ async function cargarDatos() {
   const perfil = useUsuario.perfile
   const isJefePiloto = perfil && perfil.toLowerCase() === 'jefepiloto'
   const isCliente = perfil && perfil.toLowerCase() === 'cliente'
+  const isPiloto = perfil && perfil.toLowerCase() === 'piloto'
+  const isCoordinador = perfil && perfil.toLowerCase() === 'coordinador'
   
   try {
     let datosResumen
@@ -119,10 +121,22 @@ async function cargarDatos() {
       datosResumen = await useSolicitud.obtenerResumenJefe()
     } else if (isCliente) {
       datosResumen = await useSolicitud.obtenerResumenPorSolicitante(email)
+    } else if (isPiloto) {
+      datosResumen = await useSolicitud.obtenerResumenPorEmail(email)
+    } else if (isCoordinador) {
+      // Para coordinador: obtener tanto sus solicitudes como sus asignaciones
+      const [datosSolicitante, datosPiloto] = await Promise.all([
+        useSolicitud.obtenerResumenPorSolicitante(email),
+        useSolicitud.obtenerResumenPorEmail(email)
+      ])
+      
+      console.log('Datos solicitante:', datosSolicitante)
+      console.log('Datos piloto:', datosPiloto)
+      
+      // Combinar los datos evitando duplicados
+      datosResumen = combinarResumenCoordinador(datosSolicitante, datosPiloto)
     } else {
-      // datosResumen = await useSolicitud.obtenerResumenPorEmail(email)
       datosResumen = await useSolicitud.obtenerResumenPorSolicitante(email)
-
     }
      
     console.log('Datos recibidos:', datosResumen) 
@@ -143,7 +157,80 @@ async function cargarDatos() {
   }
 }
 
-function actualizarEstadisticas() {
+// Función auxiliar para combinar datos del coordinador
+function combinarResumenCoordinador(datosSolicitante, datosPiloto) {
+  // Si alguno es null o no tiene resumen, usar el otro
+  if (!datosSolicitante || !datosSolicitante.resumen) {
+    return datosPiloto
+  }
+  if (!datosPiloto || !datosPiloto.resumen) {
+    return datosSolicitante
+  }
+  
+  const resumenCombinado = {
+    total: { count: 0, consecutivos: [] },
+    pendientes: { count: 0, consecutivos: [] },
+    enespera: { count: 0, consecutivos: [] },
+    sinprevuelos: { count: 0, consecutivos: [] },
+    sinpostvuelos: { count: 0, consecutivos: [] },
+    aprobados: { count: 0, consecutivos: [] },
+    completados: { count: 0, consecutivos: [] },
+    cancelados: { count: 0, consecutivos: [] }
+  }
+  
+  // Combinar cada categoría
+  const categorias = ['total', 'pendientes', 'enespera', 'sinprevuelos', 'sinpostvuelos', 'aprobados', 'completados', 'cancelados']
+  
+  categorias.forEach(categoria => {
+    // Set independiente para cada categoría
+    const consecutivosCategoria = new Set()
+    
+    // Agregar consecutivos del solicitante
+    if (datosSolicitante.resumen[categoria] && datosSolicitante.resumen[categoria].consecutivos) {
+      datosSolicitante.resumen[categoria].consecutivos.forEach(registro => {
+        const consecutivo = registro.consecutivo || registro
+        if (!consecutivosCategoria.has(consecutivo)) {
+          resumenCombinado[categoria].consecutivos.push(registro)
+          consecutivosCategoria.add(consecutivo)
+        }
+      })
+    }
+    
+    // Agregar consecutivos del piloto (solo los únicos)
+    if (datosPiloto.resumen[categoria] && datosPiloto.resumen[categoria].consecutivos) {
+      datosPiloto.resumen[categoria].consecutivos.forEach(registro => {
+        const consecutivo = registro.consecutivo || registro
+        if (!consecutivosCategoria.has(consecutivo)) {
+          resumenCombinado[categoria].consecutivos.push(registro)
+          consecutivosCategoria.add(consecutivo)
+        }
+      })
+    }
+    
+    // Actualizar el count
+    resumenCombinado[categoria].count = resumenCombinado[categoria].consecutivos.length
+  })
+  
+  console.log('Resumen combinado final:', resumenCombinado)
+  
+  return {
+    ok: true,
+    resumen: resumenCombinado,
+    email: datosSolicitante.email || datosPiloto.email,
+    mensaje: 'Resumen combinado obtenido exitosamente'
+  }
+}
+
+// function actualizarEstadisticas() {
+//   if (!resumenDatos.value) return
+  
+//   stats.value.forEach(stat => {
+//     const categoria = resumenDatos.value[stat.filtro]
+//     stat.value = categoria ? categoria.count : 0
+//   })
+// }
+
+async function actualizarEstadisticas() {
   if (!resumenDatos.value) return
   
   stats.value.forEach(stat => {
@@ -229,6 +316,8 @@ async function guardarFormularioHome(data) {
           resultado = await useSolicitud.putDenegarSolicitud(data.consecutivo);
         } else if (accion === 'cancelar') {
           resultado = await useSolicitud.putCancelarSolicitud(data.consecutivo);
+        } else if (accion === 'enespera') {
+          resultado = await useSolicitud.putEnesperaSolicitud(data.consecutivo);
         }
         break;
         
@@ -351,21 +440,28 @@ async function handleDenegarDirecto(data) {
   try {
     let resultado;
     
-    switch (data.tipo) {
-      case 'prevuelos':
-        resultado = await usePrevuelo.putDenegarPrevuelo(data.consecutivo);  
-        break;
-      case 'postvuelos':
-        resultado = await usePostvuelo.putDenegarPostvuelo(data.consecutivo);  
-        break;
+    if (data.tipo === 'solicitudes') {
+      resultado = await useSolicitud.putDenegarSolicitud(
+        data.consecutivo,
+        "", 
+        null, 
+        data.notas || "" 
+      );
+    } else {
+      resultado = await guardarFormularioHome({
+        consecutivo: data.consecutivo,
+        tipoRegistro: data.tipo,
+        accion: data.accion
+      });
     }
     
-    console.log('resultado:', resultado);
+    console.log('resultado denegar:', resultado);
+    
     await cargarDatos();
     await actualizarEstadisticas();
     
   } catch (error) {
-    console.error('Error al denegar directamente:', error);
+    console.error('Error al denegar:', error);
   } finally {
     cargando.value = false;
   }
@@ -388,10 +484,11 @@ async function handleCancelarDirecto(data) {
   }
 }
 
-async function handleEnesperaDirecto(consecutivo) {
+async function handleEnesperaDirecto(data) {
+  console.log('handleEnesperaDirecto ejecutada con:', data); // Para debug
   cargando.value = true;
   try {
-    const resultado = await useSolicitud.putEnesperaSolicitud(consecutivo);  
+    const resultado = await useSolicitud.putEnesperaSolicitud(data.consecutivo);  
     
     console.log('resultado enespera:', resultado);
     

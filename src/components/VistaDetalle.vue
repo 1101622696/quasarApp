@@ -14,20 +14,20 @@
 </div>
  
         <div class="q-px-md">
-<AccionesRegistro 
-  :registro="registro" 
-  :tipoRegistro="tipoRegistro"
-  :perfilUsuario="perfilUsuario"
-  @editar="$emit('editar', registro)" 
-  @aprobar="$emit('aprobar', registro.consecutivo)"
-  @cancelar="$emit('cancelar', registro.consecutivo)"
-  @ir-prevuelo="$emit('ir-prevuelo', registro.consecutivo)"
-  @ir-postvuelo="$emit('ir-postvuelo', registro.consecutivo)"
-  @aprobar-directo="$emit('aprobar-directo', $event)"
-  @denegar-directo="$emit('denegar-directo', $event)"
-  @cancelarSolicitud="$emit('cancelar-directo', $event)"
-  @enesperaSolicitud="$emit('enespera-directo', $event)"
-/>
+  <AccionesRegistro 
+    :registro="registro" 
+    :tipoRegistro="tipoRegistro"
+    :perfilUsuario="perfilUsuario"
+    @editar="$emit('editar', registro)" 
+    @aprobar="$emit('aprobar', registro.consecutivo)"
+    @cancelar="$emit('cancelar', registro.consecutivo)"
+    @ir-prevuelo="$emit('ir-prevuelo', registro.consecutivo)"
+    @ir-postvuelo="$emit('ir-postvuelo', registro.consecutivo)"
+    @aprobar-directo="$emit('aprobar-directo', $event)"
+    @denegar-directo="$emit('denegar-directo', $event)"
+    @cancelarSolicitud="$emit('cancelar-directo', $event)"
+    @enespera-directo="$emit('enespera-directo', $event)"
+  />
 
         </div>
       </q-card-section>
@@ -57,6 +57,10 @@ const props = defineProps({
     default: ''
   },
   mostrar: {
+    type: Boolean,
+    default: false
+  },
+  soloLectura: { 
     type: Boolean,
     default: false
   }

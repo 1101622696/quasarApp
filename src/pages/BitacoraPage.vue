@@ -1,54 +1,79 @@
 <template>
-  <q-page class="flex flex-center">
+  <q-page class="flex column q-pa-md">
 
-<div class="tituloTabla">
-          Bitácora
+  <q-card-section>
+      <div class="row items-center q-col-gutter-md">
+        <div class="col-12 col-md-auto">
+          <q-btn-group spread>
+            <q-btn 
+              v-for="(config, tipo) in filtrosConfig" 
+              :key="tipo"
+              :label="tipo === 'todos' ? 'Todos' : `Por ${config.titulo.split(' ').pop()}`"
+              :icon="config.icono"
+              :color="config.color"
+              @click="cargarListaPor(tipo)"
+              :outline="tipoLista !== tipo"
+            />
+          </q-btn-group>
+        </div>
+          
+        <div class="col-12 col-md-auto" v-if="tipoLista !== 'todos'">
+          <q-btn-toggle
+            v-model="ordenActual"
+            toggle-color="primary"
+            :options="opcionesOrdenamiento"
+            @update:model-value="cargarPostvuelos"
+          />
         </div>
 
+        <div class="col-12 col-md-auto" v-if="filtroActual.esFiltroTexto">
+          <q-select
+            v-model="valorFiltroTexto"
+            :options="opcionesFiltroTexto"
+            option-value="valor"
+            option-label="etiqueta"
+            dense
+            outlined
+            emit-value
+            map-options
+            @update:model-value="actualizarValorFiltro"
+          />
+        </div>
+      </div>
+    </q-card-section>
 
-    <q-table class="table" flat bordered :rows="rows" :columns="columns" row-key="consecutivo">
-      <template v-slot:body-cell-dronusado="props">
-        <q-td :props="props" style="text-align: center; border-left:none; border-left:none; border-right:none; border-top:none">
-          <p>{{ props.row.dronusado }}</p>
-        </q-td>
-      </template>
-<template v-slot:body-cell-fechaInicio="props">
-        <q-td :props="props" style="text-align: center; border-left:none; border-left:none; border-right:none; border-top:none">
-    <p>{{ props.row.fechaInicio }}</p>
-  </q-td>
-</template>
-            <template v-slot:body-cell-distanciaRecorrida="props">
-        <q-td :props="props" style="text-align: center; border-left:none; border-left:none; border-right:none; border-top:none">
-          <p>{{ props.row.distanciaRecorrida }}</p>
-        </q-td>
-      </template>
-
-    <template v-slot:body-cell-observacionesVuelo="props">
-        <q-td :props="props" style="text-align: center; border-left:none; border-left:none; border-right:none; border-top:none">
-        <span class="truncated-text">
-          {{ props.row.observacionesVuelo }}
+    <q-card-section>
+      <div class="text-h6 q-mb-md">
+        <q-icon :name="filtroActual.icono" :color="filtroActual.color" /> 
+        {{ filtroActual.titulo }}
+        <span v-if="filtroActual.esFiltroTexto && valorFiltroTexto">
+          - {{ obtenerEtiquetaFiltroTexto(valorFiltroTexto) }}
         </span>
-      </q-td>
-    </template>
-    
-        <template v-slot:body-cell-empresa="props">
-        <q-td :props="props" style="text-align: center; border-left:none; border-left:none; border-right:none; border-top:none">
-        <span class="truncated-text">
-          {{ props.row.empresa }}
-        </span>
-      </q-td>
-    </template>
+      </div>
 
-        <template v-slot:body-cell-Link="props">
-        <q-td :props="props" style="text-align: center; border-left:none; border-left:none; border-right:none; border-top:none">
-        <span class="truncated-text">
-          {{ props.row.Link }}
-        </span>
-      </q-td>
-    </template>
+      <q-list bordered separator>
+        <q-item 
+          v-for="postvuelo in postvuelos" 
+          :key="postvuelo.consecutivo"
+          clickable
+          @click="verDetalles(postvuelo.consecutivo)"
+        >
+          <q-item-section>
+            <q-item-label>{{ postvuelo.cliente }} - {{ postvuelo.consecutivo }} - {{ postvuelo.piloto }}</q-item-label>
+            <q-item-label caption v-if="postvuelo.valorFiltro !== undefined">
+              {{ obtenerEtiquetaValor(postvuelo.valorFiltro) }}
+            </q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-list>
 
-    </q-table>
-
+      <VistaDetalle
+  v-model:mostrar="mostrarDetalles"
+  :registro="registroSeleccionado"
+  :tipoRegistro="'postvuelos'"
+  :soloLectura="true"
+/>
+    </q-card-section>
 
   </q-page>
 </template>
@@ -56,53 +81,142 @@
 
 <script setup>
 import { useStorePostvuelos } from '../stores/postvuelos.js'
-import {ref, onMounted} from 'vue'
+import {ref, onMounted, computed, watch} from 'vue'
+import { TIPOS_FILTRO, CONFIG_FILTROS } from '../composables/filtrospo';
+import VistaDetalle from 'src/components/VistaDetalle.vue'
 
-const usePostvuelo = useStorePostvuelos()
-const userOptions = ref([])
+const usePostvuelo = useStorePostvuelos();
+const valorFiltroTexto = ref(null);
+const tipoLista = ref(TIPOS_FILTRO.TODOS);
+const ordenActual = ref('desc');
+const postvuelos = ref([]);
+const mostrarDetalles = ref(false)
+const registroSeleccionado = ref(null)
 
-let rows = ref([]);
-let columns = ref([
-  {name:"consecutivo", label:"Consecutivo", field:"consecutivo", align:"center"},
-  {name:"dronusado", label:"Dron", field:"dronusado", align:"center"},
-  {name:"piloto", label:"Piloto", field:"piloto", align:"center"},
-  { name: "fechaInicio", sortable: true, label: "fecha", field: "fechaInicio", align: "center" },
-  { name: "distanciaRecorrida", label: "distancia Recorrida", field: "distanciaRecorrida", align: "center" },
-  { name: "observacionesVuelo", label: "observaciones", field: "observacionesVuelo", align: "center" },
-  { name: "empresa", label: "Empresa", field: "empresa", align: "center" },
-  { name: "Link", label: "Archivos", field: "Link", align: "center" },
-]);
+const filtrosConfig = computed(() => CONFIG_FILTROS);
 
-async function listartablaPostvuelos() {
+const filtroActual = computed(() => CONFIG_FILTROS[tipoLista.value]);
+
+const opcionesOrdenamiento = computed(() => {
+  if (tipoLista.value === TIPOS_FILTRO.TODOS) return [];
+  
+  return [
+    { label: filtroActual.value.etiquetaDesc, value: 'desc' },
+    { label: filtroActual.value.etiquetaAsc, value: 'asc' }
+  ];
+});
+
+watch(tipoLista, (newValue) => {
+  const filtro = CONFIG_FILTROS[newValue];
+  if (filtro.esFiltroTexto && filtro.opcionesFiltro?.length > 0) {
+    valorFiltroTexto.value = filtro.opcionesFiltro[0].valor;
+  } else {
+    valorFiltroTexto.value = null;
+  }
+});
+
+function cargarListaPor(tipo) {
+  tipoLista.value = tipo;
+  ordenActual.value = 'desc';
+  
+ if (tipo === 'estado') {
+    valorFiltroTexto.value = 'activo'; 
+  } else {
+    valorFiltroTexto.value = null;
+  }
+  
+  cargarPostvuelos();
+}
+
+function actualizarValorFiltro(nuevoValor) {
+  console.log(`Cambiando valor del filtro a: ${nuevoValor}`);
+  valorFiltroTexto.value = nuevoValor;
+  cargarPostvuelos();
+}
+
+function obtenerEtiquetaValor(valor) {
+  if (tipoLista.value === TIPOS_FILTRO.FECHA) {
+    return new Date(valor).toLocaleDateString();
+  } else if (tipoLista.value === TIPOS_FILTRO.TIEMPO) {
+    return `${valor} min`;
+  } else if (tipoLista.value === TIPOS_FILTRO.DISTANCIA) {
+    return `${valor} m`;
+  } else if (tipoLista.value === TIPOS_FILTRO.ALTURA) {
+    return `${valor} m`;
+  }
+  return valor;
+}
+
+function obtenerEtiquetaFiltroTexto(valor) {
+  if (filtroActual.value.esFiltroTexto && filtroActual.value.opcionesFiltro) {
+    const opcion = filtroActual.value.opcionesFiltro.find(opt => opt.valor === valor);
+    return opcion ? opcion.etiqueta : valor;
+  }
+  return valor;
+}
+
+const opcionesFiltroTexto = computed(() => {
+  if (tipoLista.value && filtroActual.value && filtroActual.value.esFiltroTexto) {
+    return filtroActual.value.opcionesFiltro || [];
+  }
+  return [];
+});
+
+async function cargarPostvuelos() {
   try {
-    const postvuelos = await usePostvuelo.listarPostvuelos();
+    let response;
     
-    rows.value = postvuelos.map(item => {
-      return {
-        dronusado: item['dron-usado'],
-        piloto: item['piloto-postvuelo'],
-        fechaInicio: item['id- fecha'],
-        consecutivo: item['consecutivo-solicitud'],
-        distanciaRecorrida: item['distancia recorrida'] || '', 
-        observacionesVuelo: item['observaciones'] || '', 
-        empresa: item['empresa'] || '',
-        Link: item['link'] || '',
-      };
-    });
+    if (tipoLista.value === TIPOS_FILTRO.TODOS) {
+      response = await usePostvuelo.listarPostvuelosAprobados();
+   } else {
+      const tipoOrden = filtroActual.value.campoOrden;
+      response = await usePostvuelo.listarPostvuelosOrdenados(tipoOrden, ordenActual.value);
+    }
     
-    userOptions.value = postvuelos.map((s) => ({
-      label: s.empresa || '',
-      value: s['consecutivo-solicitud'] || '',
-    }));
+    if (Array.isArray(response)) {
+      postvuelos.value = response.map(item => {
+        const result = {
+          consecutivo: item['consecutivo-solicitud'] || '',
+          cliente: item['empresa_post'] || '',
+          piloto: item['piloto-postvuelo'] || '',
+        };
+        
+        const campoDatos = filtroActual.value?.campoDatos;
+        if (campoDatos && item[campoDatos] !== undefined) {
+          result.valorFiltro = item[campoDatos];
+        }
+        
+        return result;
+      });
+    } else {
+      console.error('Error en formato de respuesta:', response);
+      postvuelos.value = [];
+    }
   } catch (error) {
-    console.error(error);
-    rows.value = [];
+    console.error(`Error al cargar postvuelo por ${tipoLista.value}:`, error);
+    postvuelos.value = [];
   }
 }
 
+async function verDetalles(consecutivo) {
+  try {
+    // Obtener los datos completos del postvuelo
+    const detallesCompletos = await usePostvuelo.obtenerdatodepostvuelo(consecutivo);
+    
+    registroSeleccionado.value = {
+      consecutivo: consecutivo,
+      datosOriginales: detallesCompletos,
+      tipoRegistro: 'postvuelos'
+    };
+    
+    mostrarDetalles.value = true;
+  } catch (error) {
+    console.error('Error al ver detalles:', error);
+  }
+}
 
 onMounted(() => {
-  listartablaPostvuelos();
+  cargarPostvuelos();
 });
 
 defineOptions({

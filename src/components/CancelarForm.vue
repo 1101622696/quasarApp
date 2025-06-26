@@ -57,14 +57,18 @@ const notas = ref('');
 async function cancelarSolicitud() {
   if (await validar()) {
     const todo = {
-   
-      notas: notas.value,
+     notas: notas.value,
     }
-
+        console.log("Enviando cancelacion:", {
+      notas: notas.value,
+    });
+    console.log("Enviando cancelaciont:", {
+      todo: todo.value,
+    });
     try {
         let response = await useSolicitud.putCancelarSolicitud(
         props.consecutivo,
-      todo.value
+      notas.value
     );
     
     if (response.status === 200) {

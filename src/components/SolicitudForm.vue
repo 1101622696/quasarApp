@@ -1,361 +1,328 @@
 <template>
-  <div>
-    <div class="q-pa-md">
-      <div class="q-gutter-md row">
+  <div class="q-pa-md">
+    <q-card flat bordered class="q-pa-lg">
 
-        <div class="col-12 col-sm-6" v-if="perfilUsuario.toLowerCase() !== 'cliente'">
-          <q-select
-            filled
-            v-model="formulario.pilotoarealizarvuelo"
-            label="Usted realizará el vuelo?"
-            :options="realizarvueloOptions"
-          />
-        </div>
+      <q-banner class="bg-grey-2 text-primary q-mb-md" rounded>
+        <strong>Formulario de Solicitud de Operación Aérea</strong>
+      </q-banner>
 
-          <q-select
-            filled
-            v-model="formulario.tipodeoperacionaerea"
-            label="Propósito"
-            :options="tipodeoperacionaereaOptions"
-          />
-        
-         <q-input
+      <div class="row q-col-gutter-md">
+
+        <q-select
+          v-if="perfilUsuario.toLowerCase() !== 'cliente'"
+          class="col-12 col-md-6"
+          filled
+          v-model="formulario.pilotoarealizarvuelo"
+          label="¿Usted realizará el vuelo?"
+          :options="realizarvueloOptions"
+        />
+
+        <q-select
+          class="col-12 col-md-6"
+          filled
+          v-model="formulario.tipodeoperacionaerea"
+          label="Propósito de la Operación"
+          :options="tipodeoperacionaereaOptions"
+          readonly
+        />
+
+        <!-- <q-input
+          class="col-12 col-md-6"
+          filled
           v-model="formulario.empresa"
           label="Empresa"
+        /> -->
+                <q-select
+          class="col-12 col-md-6"
           filled
-          style="width: 300px"
+          v-model="formulario.empresa"
+          use-input
+          input-debounce="0"
+          label="Cliente"
+          :options="clientesOptions"
+          @filter="filterclientes"
+          option-label="name"
+          option-value="name"
+          emit-value
+          map-options
         />
 
-              <div class="q-pa-md">
-                <div class="q-gutter-md row items-start">
-                  <q-date v-model="formulario.fecha_inicio" />
-                </div>
-              </div>
-
-              <div class="q-pa-md">
-                <div class="q-gutter-md row items-start">
-                  <q-date v-model="formulario.fecha_fin" />
-                </div>
-              </div>
-
-              <div class="q-pa-md">
-                <div class="q-gutter-md">
-                  <q-time v-model="formulario.hora_inicio" />
-                </div>
-              </div>
-
-              <div class="q-pa-md">
-                <div class="q-gutter-md">
-                  <q-time v-model="formulario.hora_fin" />
-                </div>
-              </div>
-
-              <q-input
-                filled
-                v-model="formulario.detalles_cronograma"
-                label="Otros Detalles del Cronograma de Operación:"
-              />
-
-           <div class="col-12 col-sm-6" v-if="perfilUsuario.toLowerCase() !== 'cliente'">
-              <q-input
-                filled
-                type="number"
-                v-model="formulario.peso_maximo"
-                label="Peso (Masa) Bruto Máximo de Operación (KG):"
-                :dense="dense"
-              />
-           </div>
-
-              <q-select
-                filled
-                v-model="formulario.departamento"
-                use-input
-                input-debounce="0"
-                label="Departamento"
-                :options="departamentoOptions"
-                @filter="filterdepartamentos"
-                option-label="name"
-                option-value="name"
-                emit-value
-                map-options
-                style="width: 250px"
-                behavior="menu"
-              >
-                <template v-slot:no-option>
-                  <q-item>
-                    <q-item-section class="text-grey"> No results </q-item-section>
-                  </q-item>
-                </template>
-              </q-select>
-
-                            <q-select
-                filled
-                v-model="formulario.municipio"
-                use-input
-                input-debounce="0"
-                label="Municipio"
-                :options="municipioOptions"
-                @filter="filtermunicipios"
-                option-label="name"
-                option-value="name"
-                emit-value
-                map-options
-                style="width: 250px"
-                behavior="menu"
-                :disable="!formulario.departamento"
-              >
-                <template v-slot:no-option>
-                  <q-item>
-                    <q-item-section class="text-grey"> No results </q-item-section>
-                  </q-item>
-                </template>
-              </q-select>
-
-        <div class="col-12 col-sm-6" v-if="perfilUsuario.toLowerCase() !== 'cliente'">
-             <q-select
-                filled
-                v-model="formulario.tipodecontactovisualconlaua"
-                label="tipo de contacto visual con la UA"
-                :options="contactovisualOptions"
-                style="width: 300px"
-                class="q-mb-md"
-              />
-        </div>
-
-        <div class="col-12 col-sm-6" v-if="perfilUsuario.toLowerCase() !== 'cliente'">
-              <q-select
-                filled
-                v-model="formulario.vueloespecial"
-                label="tipo de vuelo especial"
-                :options="vueloespecialOptions"
-                style="width: 300px"
-                class="q-mb-md"
-              />
-        </div>
-
-        <div class="col-12 col-sm-6" v-if="perfilUsuario.toLowerCase() !== 'cliente'">
-              <q-input filled v-model="formulario.justificacionvueloespecial" label="Justificación:" />
-        </div>
-
-<div class="col-12 col-sm-6" v-if="perfilUsuario.toLowerCase() !== 'cliente'">
-    <div class="q-pa-md">
-  <q-select
-    filled
-    v-model="formulario.tipoOperacion"
-    :options="opcionesOperacion"
-    label="Selecciona tipo de operación"
-    @update:model-value="mostrarFormulario"
-    style="width: 300px"
-    class="q-mb-md"
-    emit-value
-    map-options
-    option-label="label"
-    option-value="value"
-  />
-
-      <!-- Formulario para Polígono -->
-      <div v-if="formulario.tipoOperacion === 'poligono'" class="q-mt-md">
-        <q-input 
-          class="input q-mb-md"
-          filled 
-          v-model="formulario.poligononombre" 
-          label="Polígono (Nombre)"
+        <q-select
+          class="col-12 col-md-6"
+          filled
+          v-model="formulario.sucursal"
+          use-input
+          input-debounce="0"
+          label="Sucursal"
+          :options="sucursalOptions"
+          @filter="filtersucursales"
+          option-label="name"
+          option-value="name"
+          emit-value
+          map-options
+          :disable="!formulario.empresa"
         />
+
+        <div class="col-12 col-md-6">
+          <label class="text-subtitle2">Fecha Inicio</label>
+          <q-date v-model="formulario.fecha_inicio" filled class="q-mb-md" />
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="text-subtitle2">Fecha Fin</label>
+          <q-date v-model="formulario.fecha_fin" filled class="q-mb-md" />
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="text-subtitle2">Hora Inicio</label>
+          <q-time v-model="formulario.hora_inicio" filled class="q-mb-md" />
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="text-subtitle2">Hora Fin</label>
+          <q-time v-model="formulario.hora_fin" filled class="q-mb-md" />
+        </div>
+
         <q-input
-          class="input q-mb-md"
+          class="col-12"
           filled
-          v-model="formulario.altura_poligono"
-          label="Altura solicitada (metros / pies)"
+          type="textarea"
+          v-model="formulario.detalles_cronograma"
+          label="Detalles del Cronograma"
+          autogrow
         />
 
-        <q-table
-          flat
-          bordered
-          :rows="filasPoligono"
-          :columns="columnas"
-          row-key="item"
-          hide-bottom
-          class="q-mb-md"
-        >
-<template #body-cell-latitud="props">
-  <q-td>
-    <q-input dense v-model="formulario[`latitud_poligono_${props.row.item}`]" />
-  </q-td>
-</template>
-<template #body-cell-longitud="props">
-  <q-td>
-    <q-input dense v-model="formulario[`longitud_poligono_${props.row.item}`]" />
-  </q-td>
-</template>
-          <template #body-cell-item="props">
-            <q-td>
-              {{ props.row.item }}
-              <q-btn
-                v-if="props.row.item === filasPoligono.length && props.row.item < 5"
-                size="sm"
-                flat
-                icon="add"
-                color="primary"
-                @click="agregarFilaPoligono"
-                class="q-ml-sm"
-              />
-            </q-td>
-          </template>
-        </q-table>
+        <!-- <q-input
+          v-if="perfilUsuario.toLowerCase() !== 'cliente'"
+          class="col-12 col-md-6"
+          filled
+          type="number"
+          v-model="formulario.peso_maximo"
+          label="Peso Bruto Máximo (KG)"
+        /> -->
 
-        <div class="text-caption text-grey q-mt-sm">
-          * La última coordenada debe coincidir con la primera para cerrar el polígono.
+        <q-select
+          class="col-12 col-md-6"
+          filled
+          v-model="formulario.departamento"
+          use-input
+          input-debounce="0"
+          label="Departamento"
+          :options="departamentoOptions"
+          @filter="filterdepartamentos"
+          option-label="name"
+          option-value="name"
+          emit-value
+          map-options
+        />
+
+        <q-select
+          class="col-12 col-md-6"
+          filled
+          v-model="formulario.municipio"
+          use-input
+          input-debounce="0"
+          label="Municipio"
+          :options="municipioOptions"
+          @filter="filtermunicipios"
+          option-label="name"
+          option-value="name"
+          emit-value
+          map-options
+          :disable="!formulario.departamento"
+        />
+
+        <q-select
+          v-if="perfilUsuario.toLowerCase() !== 'cliente'"
+          class="col-12 col-md-6"
+          filled
+          v-model="formulario.tipodecontactovisualconlaua"
+          label="Tipo de Contacto Visual con la UA"
+          :options="contactovisualOptions"
+        />
+
+        <q-select
+          v-if="perfilUsuario.toLowerCase() !== 'cliente'"
+          class="col-12 col-md-6"
+          filled
+          v-model="formulario.vueloespecial"
+          label="Tipo de Vuelo Especial"
+          :options="vueloespecialOptions"
+        />
+
+        <q-input
+          v-if="perfilUsuario.toLowerCase() !== 'cliente'"
+          class="col-12 col-md-6"
+          filled
+          v-model="formulario.justificacionvueloespecial"
+          label="Justificación del Vuelo Especial"
+        />
+
+        <q-select
+          v-if="perfilUsuario.toLowerCase() !== 'cliente'"
+          class="col-12 col-md-6"
+          filled
+          v-model="formulario.tipoOperacion"
+          :options="opcionesOperacion"
+          label="Tipo de Operación"
+          @update:model-value="mostrarFormulario"
+          emit-value
+          map-options
+          option-label="label"
+          option-value="value"
+        />
+
+        <!-- Polígono -->
+        <div v-if="formulario.tipoOperacion === 'poligono'" class="col-12">
+          <q-banner class="bg-grey-1 q-mb-sm">Operación por Polígono</q-banner>
+
+          <q-input filled v-model="formulario.poligononombre" label="Nombre del Polígono" />
+          <q-input filled v-model="formulario.altura_poligono" label="Altura solicitada (metros)" />
+
+          <q-table
+            flat bordered
+            :rows="filasPoligono"
+            :columns="columnas"
+            row-key="item"
+            hide-bottom
+          >
+            <template #body-cell-item="props">
+              <q-td>
+                {{ props.row.item }}
+                <q-btn
+                  v-if="props.row.item === filasPoligono.length && props.row.item < 5"
+                  size="sm" flat icon="add" color="primary"
+                  @click="agregarFilaPoligono"
+                  class="q-ml-sm"
+                />
+              </q-td>
+            </template>
+            <template #body-cell-latitud="props">
+              <q-td><q-input :dense="dense" v-model="formulario[`latitud_poligono_${props.row.item}`]" /></q-td>
+            </template>
+            <template #body-cell-longitud="props">
+              <q-td><q-input :dense="dense" v-model="formulario[`longitud_poligono_${props.row.item}`]" /></q-td>
+            </template>
+          </q-table>
+
+          <div class="text-caption text-grey">* La última coordenada debe coincidir con la primera.</div>
+        </div>
+
+        <!-- Tramo -->
+        <div v-if="formulario.tipoOperacion === 'tramo'" class="col-12">
+          <q-banner class="bg-grey-1 q-mb-sm">Operación por Tramo Lineal</q-banner>
+
+          <q-input filled v-model="formulario.tramolinealnombre" label="Nombre del Tramo" />
+          <q-input filled v-model="formulario.altura_tramo" label="Altura en metros" />
+
+          <q-table
+            flat bordered
+            :rows="filasTramo"
+            :columns="columnas"
+            row-key="item"
+            hide-bottom
+          >
+            <template #body-cell-item="props">
+              <q-td>
+                {{ props.row.item }}
+                <q-btn
+                  v-if="props.row.item === filasTramo.length && props.row.item < 5"
+                  size="sm" flat icon="add" color="primary"
+                  @click="agregarFilaTramo"
+                  class="q-ml-sm"
+                />
+              </q-td>
+            </template>
+            <template #body-cell-latitud="props">
+              <q-td><q-input :dense="dense" v-model="formulario[`latitud_tramo_${props.row.item}`]" /></q-td>
+            </template>
+            <template #body-cell-longitud="props">
+              <q-td><q-input :dense="dense" v-model="formulario[`longitud_tramo_${props.row.item}`]" /></q-td>
+            </template>
+          </q-table>
+        </div>
+
+        <!-- Circunferencia -->
+        <div v-if="formulario.tipoOperacion === 'circunferencia'" class="col-12">
+          <q-banner class="bg-grey-1 q-mb-sm">Operación por Circunferencia</q-banner>
+
+          <q-input filled v-model="formulario.circuferenciaencoordenadayradionombre" label="Nombre de la Circunferencia" />
+          <q-input filled v-model="formulario.altura_circunferencia" label="Altura solicitada (metros)" />
+
+          <q-table
+            flat bordered
+            :rows="filasCircunferencia"
+            :columns="columnas"
+            row-key="item"
+            hide-bottom
+          >
+            <template #body-cell-item="props">
+              <q-td>
+                {{ props.row.item }}
+                <q-btn
+                  v-if="props.row.item === filasCircunferencia.length && props.row.item < 2"
+                  size="sm" flat icon="add" color="primary"
+                  @click="agregarFilaCircunferencia"
+                  class="q-ml-sm"
+                />
+              </q-td>
+            </template>
+            <template #body-cell-latitud="props">
+              <q-td><q-input :dense="dense" v-model="formulario[`latitud_circunferencia_${props.row.item}`]" /></q-td>
+            </template>
+            <template #body-cell-longitud="props">
+              <q-td><q-input :dense="dense" v-model="formulario[`longitud_circunferencia_${props.row.item}`]" /></q-td>
+            </template>
+          </q-table>
+        </div>
+
+        <!-- Adjuntos -->
+        <div class="col-12">
+          <q-banner class="q-mt-lg q-mb-sm text-indigo">Adjuntar Archivos</q-banner>
+          <q-file
+            label="Seleccionar archivos"
+            filled
+            multiple
+            v-model="archivosSeleccionados"
+            @update:model-value="manejarSeleccionArchivos"
+            accept="image/*, application/pdf, .doc, .docx, .xls, .xlsx, .kml, .kmz"
+            clearable
+            style="max-width: 400px"
+          />
+
+          <div class="q-mt-md row q-col-gutter-sm">
+            <q-chip
+              v-for="(archivo, index) in formulario.file_kmz"
+              :key="index"
+              removable
+              @remove="eliminarArchivo(index)"
+              class="q-ma-xs"
+            >
+              {{ archivo.name }}
+              <q-tooltip>{{ archivo.type }} - {{ (archivo.size / 1024).toFixed(2) }} KB</q-tooltip>
+            </q-chip>
+          </div>
         </div>
       </div>
 
-      <!-- Formulario para Tramo -->
-      <div v-if="formulario.tipoOperacion === 'tramo'" class="q-mt-md">
-        <q-input 
-          class="input q-mb-md"
-          filled 
-          v-model="formulario.tramolinealnombre" 
-          label="Tramo Lineal (Nombre)"
-        />
-        <q-input 
-          class="input q-mb-md"
-          filled 
-          v-model="formulario.altura_tramo" 
-          label="Dirección"
-        />
+      <q-separator spaced />
 
-        <q-table
-          flat
-          bordered
-          :rows="filasTramo"
-          :columns="columnas"
-          row-key="item"
-          hide-bottom
-          class="q-mb-md"
+      <q-card-actions align="right">
+        <q-btn
+          @click="guardar"
+          color="red"
+          class="text-white"
+          :loading="useSolicitud.loading"
         >
-         <template #body-cell-latitud="props">
-  <q-td>
-    <q-input dense v-model="formulario[`latitud_tramo_${props.row.item}`]" />
-  </q-td>
-</template>
-<template #body-cell-longitud="props">
-  <q-td>
-    <q-input dense v-model="formulario[`longitud_tramo_${props.row.item}`]" />
-  </q-td>
-</template>
-          <template #body-cell-item="props">
-            <q-td>
-              {{ props.row.item }}
-              <q-btn
-                v-if="props.row.item === filasTramo.length && props.row.item < 5"
-                size="sm"
-                flat
-                icon="add"
-                color="primary"
-                @click="agregarFilaTramo"
-                class="q-ml-sm"
-              />
-            </q-td>
+          {{ esEdicion ? 'Actualizar' : 'Agregar' }}
+          <template v-slot:loading>
+            <q-spinner color="white" size="1em" />
           </template>
-        </q-table>
-      </div>
+        </q-btn>
+        <q-btn label="Cerrar" color="black" outline @click="$emit('cancelar')" />
+      </q-card-actions>
 
-      <!-- Formulario para Circunferencia -->
-      <div v-if="formulario.tipoOperacion === 'circunferencia'" class="q-mt-md">
-        <q-input 
-          class="input q-mb-md"
-          filled 
-          v-model="formulario.circuferenciaencoordenadayradionombre" 
-          label="Circunferencia (Nombre)"
-        />
-        <q-input
-          class="input q-mb-md"
-          filled
-          v-model="formulario.altura_circunferencia"
-          label="Altura solicitada (metros / pies)"
-        />
-
-        <q-table
-          flat
-          bordered
-          :rows="filasCircunferencia"
-          :columns="columnas"
-          row-key="item"
-          hide-bottom
-          class="q-mb-md"
-        >
-          <template #body-cell-latitud="props">
-  <q-td>
-    <q-input dense v-model="formulario[`latitud_circunferencia_${props.row.item}`]" />
-  </q-td>
-</template>
-<template #body-cell-longitud="props">
-  <q-td>
-    <q-input dense v-model="formulario[`longitud_circunferencia_${props.row.item}`]" />
-  </q-td>
-</template>
-          <template #body-cell-item="props">
-            <q-td>
-              {{ props.row.item }}
-              <q-btn
-                v-if="props.row.item === filasCircunferencia.length && props.row.item < 2"
-                size="sm"
-                flat
-                icon="add"
-                color="primary"
-                @click="agregarFilaCircunferencia"
-                class="q-ml-sm"
-              />
-            </q-td>
-          </template>
-        </q-table>
-      </div>
-    </div>
-  </div>
-
-
-<div class="q-pa-md">
-  <q-file
-    label="Seleccionar archivos"
-    filled
-    multiple
-     v-model="archivosSeleccionados"
-    @update:model-value="manejarSeleccionArchivos"
-    accept="image/*, application/pdf, .doc, .docx, .xls, .xlsx, .kml, .kmz"
-    clearable
-    style="max-width: 300px"
-  />
-  
-  <div class="q-mt-md">
-    <q-chip
-      v-for="(archivo, index) in formulario.file_kmz"
-      :key="index"
-      removable
-      @remove="eliminarArchivo(index)"
-      class="q-ma-xs"
-    >
-      {{ archivo.name }}
-      <q-tooltip>{{ archivo.type }} - {{ (archivo.size / 1024).toFixed(2) }} KB</q-tooltip>
-    </q-chip>
-  </div>
-</div>
-
-      </div>
-    </div>
-    
-    <q-card-actions align="right">
-      <q-btn
-        @click="guardar"
-        color="red"
-        class="text-white"
-        :loading="useSolicitud.loading"
-      >
-        {{ esEdicion ? 'Actualizar' : 'Agregar' }}
-                <template v-slot:loading>
-                <q-spinner color="primary" size="1em" />
-              </template>
-      </q-btn>
-      <q-btn label="Cerrar" color="black" outline @click="$emit('cancelar')" />
-    </q-card-actions>
+    </q-card>
   </div>
 </template>
 
@@ -363,6 +330,7 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { useStoreSolicitudes } from '../stores/solicitudes.js'
 import { departamentosBase } from '../composables/departamentos'
+import { clientesSucursales } from '../composables/clientesysucursales'
 import { useStoreUsuarios } from '../stores/usuarios';
 import { useQuasar } from 'quasar'
 
@@ -391,7 +359,7 @@ const $q = useQuasar();
 
 const formulario = ref({
 pilotoarealizarvuelo: '',
- tipodeoperacionaerea: '',
+ tipodeoperacionaerea: 'CAPTURA DE IMÁGENES O DATOS CON FINES DE VIGILANCIA Y SEGURIDAD PRIVADA',
  fecha_inicio: '',
  fecha_fin: '',
  hora_inicio: '',
@@ -437,27 +405,21 @@ pilotoarealizarvuelo: '',
   longitud_circunferencia_1: '',
   latitud_circunferencia_2: '',
   longitud_circunferencia_2: '',
- file_kmz: []
+ file_kmz: [],
+ sucursal: '',
 });
 
 
 const tipodeoperacionaereaOptions = [
-  'SIMPLE CAPTURA DE IMÁGENES O DATOS',
-  'CAPTURA DE IMÁGENES O DATOS, PARA MEDIOS MASIVOS DE COMUNICACIÓN',
-  'DISPERSIÓN',
-  'TRANSPORTE DE CARGA ("DRONE DELIVERY")',
-  'ACTIVIDADES MISIONALES DE ENTIDADES PÚBLICAS',
   'CAPTURA DE IMÁGENES O DATOS CON FINES DE VIGILANCIA Y SEGURIDAD PRIVADA',
-  'ASPERSIÓN',
-  'ENJAMBRE',
-  'INSTRUCCIÓN',
 ]
+
 const realizarvueloOptions = [
   'Si',
   'No'
 ]
 
-const contactovisualOptions = ['vlos', 'evlos', 'bvlos']
+const contactovisualOptions = ['vlos', 'evlos']
 const vueloespecialOptions = [
   'VUELO NOCTURNO',
   'VUELO AUTÓNOMO',
@@ -520,6 +482,59 @@ const filtermunicipios = (val, update) => {
 
 prepararDepartamentos()
 
+const clientesOptions = ref([])
+const sucursalOptions = ref([])
+
+const prepararClientes = () => {
+  clientesOptions.value = Object.keys(clientesSucursales).map((dep) => ({
+    name: dep,
+    value: dep,
+  }))
+}
+
+watch(formulario.value.empresa, (newDep) => {
+  formulario.value.sucursal = ''
+  if (newDep && clientesSucursales[newDep]) {
+    sucursalOptions.value = clientesSucursales[newDep].map((mun) => ({
+      name: mun,
+      value: mun,
+    }))
+  } else {
+    sucursalOptions.value = []
+  }
+})
+
+const filterclientes = (val, update) => {
+  if (val === '') {
+    prepararClientes()
+  } else {
+    const needle = val.toLowerCase()
+    clientesOptions.value = Object.keys(clientesSucursales)
+      .filter((v) => v.toLowerCase().indexOf(needle) > -1)
+      .map((dep) => ({ name: dep, value: dep }))
+  }
+  update()
+}
+
+const filtersucursales = (val, update) => {
+  if (!formulario.value.empresa) return
+
+  if (val === '') {
+    sucursalOptions.value = clientesSucursales[formulario.value.empresa].map((mun) => ({
+      name: mun,
+      value: mun,
+    }))
+  } else {
+    const needle = val.toLowerCase()
+    sucursalOptions.value = clientesSucursales[formulario.value.empresa]
+      .filter((v) => v.toLowerCase().indexOf(needle) > -1)
+      .map((mun) => ({ name: mun, value: mun }))
+  }
+  update()
+}
+
+prepararClientes()
+
 function manejarSeleccionArchivos(files) {
   if (files) {
     // Si es array de archivos
@@ -578,6 +593,13 @@ watch(() => perfilUsuario.value, (newPerfil) => {
 watch(() => formulario.value.tipoOperacion, (newValue, oldValue) => {
   console.log('tipoOperacion cambió de:', oldValue, 'a:', newValue);
 });
+watch(() => formulario.value.tipodeoperacionaerea, (nuevo) => {
+  const fijo = 'CAPTURA DE IMÁGENES O DATOS CON FINES DE VIGILANCIA Y SEGURIDAD PRIVADA';
+  if (nuevo !== fijo) {
+    formulario.value.tipodeoperacionaerea = fijo;
+  }
+});
+
 onMounted(() => {
   if (props.esEdicion && props.datos) {
     for (const key in props.datos) {
@@ -587,7 +609,7 @@ onMounted(() => {
     }
   } else if (perfilUsuario.value.toLowerCase() === 'cliente') {
     formulario.value.pilotoarealizarvuelo = 'No';
-    formulario.value.tipodeoperacionaerea = '';
+    formulario.value.tipodeoperacionaerea = 'CAPTURA DE IMÁGENES O DATOS CON FINES DE VIGILANCIA Y SEGURIDAD PRIVADA';
   }
 });
 
@@ -597,6 +619,15 @@ async function guardar() {
     if (!validarFechasYHoras()) {
     return;
   }
+    
+    if (!validarAltura120()) {
+    return;
+  }
+
+if (!validardatosformulario()) {
+  cargando.value = false;
+  return;
+}
 
   try {
     const formData = new FormData();
@@ -785,6 +816,81 @@ function validarFechasYHoras() {
     }
   
   return true;
+}
+
+function validarAltura120() {
+  const { altura_poligono, altura_tramo, altura_circunferencia } = formulario.value;
+
+  if (altura_poligono && Number(altura_poligono) > 120) {
+    $q.notify({
+      type: "negative",
+      message: "La altura del polígono no puede ser mayor a 120 metros",
+      position: "bottom-right",
+    });
+    return false;
+  }
+
+  if (altura_tramo && Number(altura_tramo) > 120) {
+    $q.notify({
+      type: "negative",
+      message: "La altura del tramo no puede ser mayor a 120 metros",
+      position: "bottom-right",
+    });
+    return false;
+  }
+
+  if (altura_circunferencia && Number(altura_circunferencia) > 120) {
+    $q.notify({
+      type: "negative",
+      message: "La altura de la circunferencia no puede ser mayor a 120 metros",
+      position: "bottom-right",
+    });
+    return false;
+  }
+
+  return true;
+}
+
+function validardatosformulario() {
+
+  let verificado = true;
+  const esCliente = perfilUsuario.value.toLowerCase() === 'cliente';
+
+  const { empresa, departamento, municipio, tipodecontactovisualconlaua, vueloespecial } = formulario.value;
+
+  if (empresa === "") {
+    mostrarMensajeError("seleccione una empresa")
+        verificado = false;
+  }
+
+  if (departamento == "") {
+    mostrarMensajeError("seleccione un departamento")
+        verificado = false;
+  }
+
+  if (municipio === "") {
+    mostrarMensajeError("seleccione una ciudad")
+        verificado = false;
+  }
+  if (!esCliente && tipodecontactovisualconlaua === "") {
+    mostrarMensajeError("seleccione un tipo de contacto visual");
+    verificado = false;
+  }
+
+  if (!esCliente && vueloespecial === "") {
+    mostrarMensajeError("seleccione un vuelo especial");
+    verificado = false;
+  }
+
+  return verificado;
+}
+
+function mostrarMensajeError(mensaje) {
+    $q.notify({
+        type: "negative",
+        message: mensaje,
+        position: "bottom-right",
+    });
 }
 
 </script>

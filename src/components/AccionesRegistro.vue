@@ -152,7 +152,9 @@ import AprobarForm from './AprobarForm.vue';
 import CancelarForm from './CancelarForm.vue';
 import { useStoreUsuarios } from '../stores/usuarios'
 import { useStoreSolicitudes } from '../stores/solicitudes'
+import { useQuasar } from 'quasar'
 
+const $q = useQuasar()
 const useUsuario = useStoreUsuarios()
 const useSolicitud = useStoreSolicitudes()
 
@@ -172,6 +174,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['editar', 'aprobar', 'ir-prevuelo', 'ir-postvuelo', 'aprobacion-completada', 'cancelarSolicitud', 'aprobar-directo', 'denegar-directo', 'enespera-directo']);
+
 const mostrarAprobacion = ref(false);
 const mostrarCancelacion = ref(false);
 const cargandoEstado = ref(false)
@@ -184,7 +187,7 @@ const esJefePiloto = computed(() => {
 function abrirDialogoAprobacion() {
   const estado = estadoGeneral.value;
   
-  if (estado === 'Solicitud Pendiente') {
+  if (estado === 'Solicitud Pendiente' || estado === 'Solicitud en Espera') {
     mostrarAprobacion.value = true;
   } else if (estado === 'Prevuelo Pendiente') {
     emit('aprobar-directo', {
@@ -204,36 +207,52 @@ function abrirDialogoAprobacion() {
 
 function denegarRegistro() {
   const estado = estadoGeneral.value;
-  let tipo = 'solicitudes';
   
-  if (estado === 'Prevuelo Pendiente') {
-    tipo = 'prevuelos';
-  } else if (estado === 'Postvuelo Pendiente') {
-    tipo = 'postvuelos';
+  if (estado === 'Solicitud Pendiente') {
+    $q.dialog({
+      title: 'Denegar Solicitud',
+      message: 'Ingrese las notas de denegación:',
+      prompt: {
+        model: '',
+        type: 'text'
+      },
+      cancel: true,
+      persistent: true
+    }).onOk(notas => {
+      emit('denegar-directo', {
+        consecutivo: props.registro.consecutivo,
+        tipo: 'solicitudes',
+        accion: 'denegar',
+        notas: notas
+      });
+    });
+  } else {
+    // Para prevuelos y postvuelos
+    let tipo = 'solicitudes';
+    if (estado === 'Prevuelo Pendiente') {
+      tipo = 'prevuelos';
+    } else if (estado === 'Postvuelo Pendiente') {
+      tipo = 'postvuelos';
+    }
+    
+    emit('denegar-directo', {
+      consecutivo: props.registro.consecutivo,
+      tipo: tipo,
+      accion: 'denegar'
+    });
   }
-  
-  emit('denegar-directo', {
-    consecutivo: props.registro.consecutivo,  
-    tipo: tipo,
-    accion: 'denegar'
-  });
 }
 
 function enesperaRegistro() {
-  const estado = estadoGeneral.value;
-  let tipo = 'solicitudes';
-  
-  if (estado === 'Solicitud Pendiente') {
-    tipo = 'solicitudes';
-  } 
+  console.log('enesperaRegistro ejecutada'); // Para debug
+  // const estado = estadoGeneral.value;
   
   emit('enespera-directo', {
     consecutivo: props.registro.consecutivo,  
-    tipo: tipo,
+    tipo: 'solicitudes',
     accion: 'enespera'
   });
 }
-
 
 function aprobacionCompletada(data) {
   mostrarAprobacion.value = false;
@@ -293,7 +312,6 @@ const jefeActuaComoPiloto = computed(() => {
   const datosOriginales = props.registro.datosOriginales || props.registro;
   const emailUsuario = useUsuario.correo || localStorage.getItem('email');
   
-  // Un jefe actúa como piloto si es jefe y está asignado como piloto en la solicitud
   return esJefePiloto.value && (
     emailUsuario === datosOriginales.piloto ||
     datosOriginales.piloto === 'Anderson Pinto' 
@@ -322,17 +340,18 @@ const esCreadorRegistro = computed(() => {
   const datosOriginales = registro.datosOriginales || registro;
   const emailUsuario = useUsuario.correo || localStorage.getItem('email');
   
-  console.log('Verificando creador:', {
-    emailUsuario,
-    datosOriginales,
-    usuario: datosOriginales.usuario || datosOriginales.useremail || datosOriginales['correo de usuario'],
-  });
-  
+  // El piloto asignado siempre es el "creador" con permisos (excepto para solicitudes pendientes)
   return emailUsuario === datosOriginales.usuario || 
          emailUsuario === datosOriginales.useremail ||
-         emailUsuario === datosOriginales.email ||
-         emailUsuario === datosOriginales.correodelcoordinador ||
          emailUsuario === datosOriginales['correo de usuario'];
+});
+
+const esSolicitanteOriginal = computed(() => {
+  const registro = props.registro;
+  const datosOriginales = registro.datosOriginales || registro;
+  const emailUsuario = useUsuario.correo || localStorage.getItem('email');
+  
+  return emailUsuario === datosOriginales.correodelcoordinador;
 });
 
 const puedeEditar = computed(() => {
@@ -342,6 +361,10 @@ const puedeEditar = computed(() => {
     'Prevuelo Pendiente',
     'Postvuelo Pendiente'
   ];
+  
+  if (['Solicitud Pendiente', 'Solicitud en Espera'].includes(estadoGeneral.value)) {
+    return (esJefePiloto.value || esSolicitanteOriginal.value) && estadosEditables.includes(estadoGeneral.value);
+  }
   
   const tienePermisos = esJefePiloto.value || esCreadorRegistro.value;
   
@@ -357,8 +380,13 @@ const puedeCancelar = computed(() => {
     'Postvuelo no iniciado',
   ];
   
+  if (['Solicitud Pendiente', 'Solicitud en Espera'].includes(estadoGeneral.value)) {
+    return esSolicitanteOriginal.value && estadosCancelables.includes(estadoGeneral.value);
+  }
+  
   return esCreadorRegistro.value && estadosCancelables.includes(estadoGeneral.value);
 });
+
 
 const puedeIrAPrevuelo = computed(() => {
   const esPilotoOCreador = esCreadorRegistro.value || jefeActuaComoPiloto.value;
@@ -387,23 +415,23 @@ const mostrarOpciones = computed(() => {
          puedeCancelar.value;
 });
 
-console.log('AccionesRegistro - Estado desde store:', {
-  consecutivo: props.registro?.consecutivo,
-  tipoRegistro: props.tipoRegistro,
-  estadoGeneral: estadoGeneral.value,
-  estadoActual: estadoActual.value,
-  cargandoEstado: cargandoEstado.value,
-  perfilUsuario: props.perfilUsuario,
-  emailUsuario: emailUsuario,
-  esCreador: esCreadorRegistro.value,
-  esJefePiloto: esJefePiloto.value,
-  jefeActuaComoPiloto: jefeActuaComoPiloto.value,
-  puedeIrAPrevuelo: puedeIrAPrevuelo.value,
-  puedeIrAPostvuelo: puedeIrAPostvuelo.value,
-  puedeEditar: puedeEditar.value,
-  puedeCancelar: puedeCancelar.value,
-  mostrarOpciones: mostrarOpciones.value
-});
+// console.log('AccionesRegistro - Estado desde store:', {
+//   consecutivo: props.registro?.consecutivo,
+//   tipoRegistro: props.tipoRegistro,
+//   estadoGeneral: estadoGeneral.value,
+//   estadoActual: estadoActual.value,
+//   cargandoEstado: cargandoEstado.value,
+//   perfilUsuario: props.perfilUsuario,
+//   emailUsuario: emailUsuario,
+//   esCreador: esCreadorRegistro.value,
+//   esJefePiloto: esJefePiloto.value,
+//   jefeActuaComoPiloto: jefeActuaComoPiloto.value,
+//   puedeIrAPrevuelo: puedeIrAPrevuelo.value,
+//   puedeIrAPostvuelo: puedeIrAPostvuelo.value,
+//   puedeEditar: puedeEditar.value,
+//   puedeCancelar: puedeCancelar.value,
+//   mostrarOpciones: mostrarOpciones.value
+// });
 
 </script>
 

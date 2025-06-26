@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import axios from "axios";
 import { ref } from "vue";
 import { Notify } from "quasar";
+import  useNotifications  from '../composables/useNotifications'
 
 
 export const useStoreUsuarios = defineStore("Usuarios", () => {
@@ -239,6 +240,58 @@ const registrarTokenFCM = async (token) => {
   };
   
   
+//    const login = async (email, password) => {
+//     try {
+//       // console.log('Iniciando solicitud de login a:', axios.defaults.baseURL + '/api/usuarios/login');
+//       const res = await axios.post("api/usuarios/login", { email, password }, {
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Accept': 'application/json'
+//         },
+//         withCredentials: true 
+//       });
+//       setToken(res.data.token)
+//       // token.value = res.data.token;
+//       user.value = res.data.usuario;
+//       perfile.value = res.data.usuario.perfil;
+//       correo.value = res.data.usuario.email;
+
+//       // localStorage.setItem('x-token', res.data.token);
+
+// // esto me sirvió para la aplicacion pero ya se puede eliminar porque ya no neesito esto 
+//       // console.log('Token guardado:', res.data.token); 
+//       // console.log('Perfil usuario:', perfile.value);
+//       // console.log('Intentando login con:', { email });
+//       // console.log('URL base:', axios.defaults.baseURL);
+
+//       Notify.create({
+//         message: 'Usuario registrado correctamente',
+//         color: "positive",
+//         position: "top",
+//       });
+
+//       console.log(res);
+//       console.log('Respuesta exitosa:', res.data);
+//       return res;
+//     } catch (error) {
+//       console.error('Error detallado:', error);
+//       // Manejo robusto del error
+//       let errorMessage = 'Usuario o contraseña incorrecta';
+//       if (error.response && error.response.data && error.response.data.errors && error.response.data.errors[0] && error.response.data.errors[0].msg) {
+//         errorMessage = error.response.data.errors[0].msg;
+//       } else if (error.response && error.response.data && error.response.data.error) {
+//         errorMessage = error.response.data.error;
+//       }
+
+//       Notify.create({
+//         type: 'negative',
+//         message: errorMessage,
+//       });
+//       console.log("Error en el login", error);
+//       return error;
+//     }
+//   };
+
    const login = async (email, password) => {
     try {
       // console.log('Iniciando solicitud de login a:', axios.defaults.baseURL + '/api/usuarios/login');
@@ -268,6 +321,16 @@ const registrarTokenFCM = async (token) => {
         color: "positive",
         position: "top",
       });
+
+    setTimeout(async () => {
+      try {
+        const { inicializarNotificaciones } = useNotifications();
+        await inicializarNotificaciones();
+      } catch (error) {
+        console.log('Error al inicializar notificaciones:', error);
+      }
+    }, 1000); // Esperar 1 segundo para que el login se complete
+
 
       console.log(res);
       console.log('Respuesta exitosa:', res.data);

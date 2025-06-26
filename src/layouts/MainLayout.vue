@@ -22,12 +22,48 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+// import { computed } from 'vue'
+// import { linksList } from '../router/link-list.js'
+// import EssentialLink from 'components/EssentialLink.vue'
+// import useUI from '../composables/useUI'
+// import { storeToRefs } from 'pinia'
+// import { useStoreUsuarios } from '../stores/usuarios'
+
+// import { useRouter } from 'vue-router'
+// const useUsuario = useStoreUsuarios()
+
+// const uiStore = useUI()
+// const { sideMenuOpen } = storeToRefs(uiStore)
+// const { toggleSideMenu } = uiStore
+
+// const router = useRouter()
+
+// const filteredLinks = computed(() => {
+//   return linksList.filter((link) => {
+//     if (!link.perfiles || link.perfiles.length === 0) return true
+
+//     return link.perfiles.includes(useUsuario.perfile)
+//   })
+// })
+
+// const logout = () => {
+//   useUsuario.eliminarToken()
+//   localStorage.removeItem('email')
+//   router.push('/')
+// }
+
+// defineOptions({
+//   name: 'MainLayout',
+// })
+
+
+import { computed, onMounted } from 'vue'
 import { linksList } from '../router/link-list.js'
 import EssentialLink from 'components/EssentialLink.vue'
 import useUI from '../composables/useUI'
 import { storeToRefs } from 'pinia'
 import { useStoreUsuarios } from '../stores/usuarios'
+import useNotifications from 'src/composables/useNotifications' 
 
 import { useRouter } from 'vue-router'
 const useUsuario = useStoreUsuarios()
@@ -38,17 +74,35 @@ const { toggleSideMenu } = uiStore
 
 const router = useRouter()
 
+const { inicializarNotificaciones, notificationsEnabled } = useNotifications()
+
 const filteredLinks = computed(() => {
   return linksList.filter((link) => {
     if (!link.perfiles || link.perfiles.length === 0) return true
-
     return link.perfiles.includes(useUsuario.perfile)
   })
+})
+
+onMounted(async () => {
+  // Solo si el usuario está autenticado
+  if (useUsuario.isAuthenticated) {
+    try {
+      // Verificar si ya están activadas las notificaciones
+      const tokenGuardado = localStorage.getItem('fcm-token');
+      if (!tokenGuardado || !notificationsEnabled.value) {
+        // Intentar inicializar notificaciones
+        await inicializarNotificaciones();
+      }
+    } catch (error) {
+      console.log('Error al verificar notificaciones:', error);
+    }
+  }
 })
 
 const logout = () => {
   useUsuario.eliminarToken()
   localStorage.removeItem('email')
+  localStorage.removeItem('fcm-token') 
   router.push('/')
 }
 

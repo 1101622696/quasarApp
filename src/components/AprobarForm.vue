@@ -194,7 +194,6 @@ const tienePilotoAsignado = computed(() => {
   // console.log("Valor de usuario:", datos.usuario);
   // console.log("Tipo de usuario:", typeof datos.usuario);
   
-  // Verificar explícitamente si la propiedad usuario existe y no está vacía
   // Usamos la propiedad "in" para verificar la existencia y luego comprobamos si no está vacía
   const tieneUsuario = 'usuario' in datos && 
                       datos.usuario !== null && 
@@ -205,22 +204,6 @@ const tienePilotoAsignado = computed(() => {
   return tieneUsuario;
 });
 
-// const esFormularioValido = computed(() => {
-//   const requierePiloto = !tienePilotoAsignado.value;
-  
-//   console.log("Estado de validación:", {
-//     tienePilotoAsignado: tienePilotoAsignado.value,
-//     requierePiloto: requierePiloto,
-//     dronSeleccionado: !!dronavolar.value,
-//     pilotoSeleccionado: !!pilotoavolar.value
-//   });
-  
-//   if (requierePiloto) {
-//     return dronavolar.value && pilotoavolar.value;
-//   }
-  
-//   return !!dronavolar.value;
-// });
 
 const esFormularioValido = computed(() => {
   console.log("Estado de validación:", {
@@ -229,10 +212,7 @@ const esFormularioValido = computed(() => {
     pilotoSeleccionado: !!pilotoavolar.value
   });
   
-  // Siempre requerir dron
-  // Si no hay piloto asignado O si se seleccionó uno nuevo, requerir piloto
   if (!tienePilotoAsignado.value) {
-    // No hay piloto asignado, debe seleccionar uno
     return dronavolar.value && pilotoavolar.value;
   } else {
     // Hay piloto asignado, solo requerir dron (piloto es opcional)
@@ -304,8 +284,16 @@ async function denegarSolicitud() {
     
     let piloto;
     
+        console.log("Enviando denego:", {
+      consecutivo: props.consecutivo,
+      piloto: piloto,
+      notas: notas.value,
+      tienePilotoAsignado: tienePilotoAsignado.value
+    });
+
     const response = await useSolicitud.putDenegarSolicitud(
       props.consecutivo,
+      "",
       piloto,
       notas.value
     );

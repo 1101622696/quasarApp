@@ -1,100 +1,129 @@
 <template>
-  <div>
-    <div class="q-pa-md">
-      <div class="q-gutter-md row">
+  <div class="q-pa-md">
+    <q-card flat bordered class="q-pa-lg">
 
-      <q-input
-        v-if="!esEdicion"
-        v-model="formulario.consecutivo"
-        label="Consecutivo de Solicitud aprobada*"
-        readonly
-      />
+      <q-banner class="bg-grey-2 text-primary q-mb-md" rounded>
+        <strong>Formulario Postvuelo</strong>
+      </q-banner>
 
-              <div class="q-pa-md">
-                <div class="q-gutter-md">
-                  <q-time v-model="formulario.horaInicio" />
-                </div>
-              </div>
+      <div class="row q-col-gutter-md">
 
-              <div class="q-pa-md">
-                <div class="q-gutter-md">
-                  <q-time v-model="formulario.horaFin" />
-                </div>
-              </div>
+        <q-input
+          v-if="!esEdicion"
+          class="col-12 col-md-6"
+          filled
+          v-model="formulario.consecutivo"
+          label="Consecutivo de Solicitud Aprobada*"
+          readonly
+        />
 
-              <q-input
-                filled
-                type="number"
-                v-model.trim="formulario.distanciaRecorrida"
-                label="Distancia recorrida (metros)"
-                :dense="dense"
-              />
+        <q-input
+          filled
+          class="col-12 col-md-6"
+          type="number"
+          v-model.trim="formulario.distanciaRecorrida"
+          label="Distancia recorrida (metros)"
+          :dense="dense"
+        />
 
-              <q-input filled v-model="formulario.alturaMaxima" label="Altura máxima (m)" />
+        <q-input
+          filled
+          class="col-12 col-md-6"
+          v-model="formulario.alturaMaxima"
+          label="Altura máxima (m)"
+        />
 
-              <q-select
-                filled
-                v-model="formulario.incidentes"
-                label="Incidentes en el vuelo"
-                :options="incidentesOptions"
-                style="width: 300px"
-                class="q-mb-md"
-              />
+        <q-select
+          filled
+          class="col-12 col-md-6"
+          v-model="formulario.incidentes"
+          label="¿Incidentes en el vuelo?"
+          :options="incidentesOptions"
+        />
 
-              <q-select
-                filled
-                v-model="formulario.propositoAlcanzado"
-                label="Propósito alcanzado?"
-                :options="propositoAlcanzadoOptions"
-                style="width: 300px"
-                class="q-mb-md"
-              />
+        <q-select
+          filled
+          class="col-12 col-md-6"
+          v-model="formulario.propositoAlcanzado"
+          label="¿Se alcanzó el propósito del vuelo?"
+          :options="propositoAlcanzadoOptions"
+        />
 
-              <q-input filled v-model="formulario.observacionesVuelo" label="Observaciones:" />
+        <q-input
+          filled
+          class="col-12"
+          type="textarea"
+          v-model="formulario.observacionesVuelo"
+          label="Observaciones"
+          autogrow
+        />
 
-<div class="q-pa-md">
-  <q-file
-    label="Seleccionar archivos"
-    filled
-    multiple
-    v-model="archivosSeleccionados"
-    @update:model-value="manejarSeleccionArchivos"
-    accept="image/*, application/pdf, .doc, .docx, .xls, .xlsx, .kml, .kmz"
-    clearable
-    style="max-width: 300px"
-  />
-  
-  <div class="q-mt-md">
-    <q-chip
-      v-for="(archivo, index) in formulario.adjuntospostvuelo"
-      :key="index"
-      removable
-      @remove="eliminarArchivo(index)"
-      class="q-ma-xs"
-    >
-      {{ archivo.name }}
-      <q-tooltip>{{ archivo.type }} - {{ (archivo.size / 1024).toFixed(2) }} KB</q-tooltip>
-    </q-chip>
-  </div>
-</div>
+        <div class="col-12 col-md-6">
+          <label class="text-subtitle2 q-mb-sm">Hora de Inicio</label>
+          <q-time
+            v-model="formulario.horaInicio"
+            format24h
+            filled
+          />
+        </div>
 
+        <div class="col-12 col-md-6">
+          <label class="text-subtitle2 q-mb-sm">Hora de Finalización</label>
+          <q-time
+            v-model="formulario.horaFin"
+            format24h
+            filled
+          />
+        </div>
+
+        <!-- Archivos adjuntos -->
+        <div class="col-12">
+          <q-banner class="q-mt-lg q-mb-sm text-indigo">Archivos Adjuntos</q-banner>
+          <q-file
+            label="Seleccionar archivos"
+            filled
+            multiple
+            v-model="archivosSeleccionados"
+            @update:model-value="manejarSeleccionArchivos"
+            accept="image/*, application/pdf, .doc, .docx, .xls, .xlsx, .kml, .kmz"
+            clearable
+            style="max-width: 400px"
+          />
+
+          <div class="q-mt-md row q-col-gutter-sm">
+            <q-chip
+              v-for="(archivo, index) in formulario.adjuntospostvuelo"
+              :key="index"
+              removable
+              @remove="eliminarArchivo(index)"
+              class="q-ma-xs"
+            >
+              {{ archivo.name }}
+              <q-tooltip>{{ archivo.type }} - {{ (archivo.size / 1024).toFixed(2) }} KB</q-tooltip>
+            </q-chip>
+          </div>
+        </div>
       </div>
-    </div>
-    
-    <q-card-actions align="right">
-      <q-btn
-        @click="guardar"
-        color="red"
-        class="text-white"
-        :loading="usePostvuelo.loading"
-      >
-        {{ esEdicion ? 'Actualizar' : 'Agregar' }}
-      </q-btn>
-        <template v-slot:loading>
-        <q-spinner color="primary" size="1em" />
-       </template>
-      <q-btn label="Cerrar" color="black" outline @click="$emit('cancelar')" />
-    </q-card-actions>
+
+      <q-separator spaced />
+
+      <!-- Botones -->
+      <q-card-actions align="right">
+        <q-btn
+          @click="guardar"
+          color="red"
+          class="text-white"
+          :loading="usePostvuelo.loading"
+        >
+          {{ esEdicion ? 'Actualizar' : 'Agregar' }}
+          <template v-slot:loading>
+            <q-spinner color="white" size="1em" />
+          </template>
+        </q-btn>
+        <q-btn label="Cerrar" color="black" outline @click="$emit('cancelar')" />
+      </q-card-actions>
+
+    </q-card>
   </div>
 </template>
 
