@@ -32,7 +32,7 @@ allprojects {
 ext {
     minSdkVersion = 23       // Usar tu versión mínima
     compileSdkVersion = 35   // Usar tu versión de compilación
-    targetSdkVersion = 35    // Usar tu versión objetivo
+    targetSdkVersion = 35  // Usar tu versión objetivo
 }
 
 task clean(type: Delete) {

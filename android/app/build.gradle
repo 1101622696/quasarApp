@@ -5,7 +5,7 @@ apply plugin: 'com.google.gms.google-services'
 
 android {
     namespace "com.misva.app"
-    compileSdk rootProject.ext.compileSdkVersion
+    compileSdk 34
     defaultConfig {
         applicationId "com.misva.app"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -35,6 +35,12 @@ android {
         jvmTarget = "17"
     }
 }
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.core:core:1.13.1'
+        force 'androidx.core:core-ktx:1.13.1'
+    }
+}
 
 repositories {
     flatDir{
@@ -47,6 +53,8 @@ dependencies {
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
     implementation "androidx.core:core-splashscreen:1.0.1"
+    implementation "androidx.core:core:1.13.1"
+    implementation "androidx.core:core-ktx:1.13.1"
     implementation project(':capacitor-android')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.21"
     testImplementation "junit:junit:4.13.2"

@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-md">
     <div class="row q-col-gutter-md q-mb-md">
-      <div class="col-xs-12 col-sm-6 col-md-3" v-for="stat in stats" :key="stat.label">
+      <div class="col-xs-6 col-sm-6 col-md-3" v-for="stat in stats" :key="stat.label">
         <q-card
           class="q-pa-sm cursor-pointer"
           :class="{ 'bg-primary-1': filtroEstadisticaActivo === stat.filtro }"

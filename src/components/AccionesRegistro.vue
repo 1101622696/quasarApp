@@ -306,7 +306,7 @@ watch(() => props.registro?.consecutivo, async (nuevoConsecutivo, anteriorConsec
   }
 }, { immediate: false })
 
-const emailUsuario = useUsuario.correo || localStorage.getItem('email')
+// const emailUsuario = useUsuario.correo || localStorage.getItem('email')
 
 const jefeActuaComoPiloto = computed(() => {
   const datosOriginales = props.registro.datosOriginales || props.registro;

@@ -1,17 +1,23 @@
 <template>
   <div class="q-pa-md">
-    <q-card flat bordered class="q-pa-lg">
+    <q-card flat bordered class="q-pa-lg shadow-2 rounded-borders">
 
-      <q-banner class="bg-grey-2 text-primary q-mb-md" rounded>
-        <strong>Formulario de Solicitud de Operación Aérea</strong>
-      </q-banner>
+      <!-- Título -->
+      <q-card-section>
+        <div class="text-h6 text-primary">Formulario de Solicitud de Operación Aérea</div>
+        <div class="text-subtitle2 text-grey">Complete la información para crear la solicitud</div>
+      </q-card-section>
+
+            <q-separator spaced />
 
       <div class="row q-col-gutter-md">
 
         <q-select
           v-if="perfilUsuario.toLowerCase() !== 'cliente'"
           class="col-12 col-md-6"
-          filled
+          outlined
+          rounded
+          dense
           v-model="formulario.pilotoarealizarvuelo"
           label="¿Usted realizará el vuelo?"
           :options="realizarvueloOptions"
@@ -19,22 +25,20 @@
 
         <q-select
           class="col-12 col-md-6"
-          filled
+          outlined
+          rounded
+          dense
           v-model="formulario.tipodeoperacionaerea"
           label="Propósito de la Operación"
           :options="tipodeoperacionaereaOptions"
           readonly
         />
 
-        <!-- <q-input
+        <q-select
           class="col-12 col-md-6"
-          filled
-          v-model="formulario.empresa"
-          label="Empresa"
-        /> -->
-                <q-select
-          class="col-12 col-md-6"
-          filled
+          outlined
+          rounded
+          dense
           v-model="formulario.empresa"
           use-input
           input-debounce="0"
@@ -47,7 +51,7 @@
           map-options
         />
 
-        <q-select
+        <!-- <q-select
           class="col-12 col-md-6"
           filled
           v-model="formulario.sucursal"
@@ -61,49 +65,92 @@
           emit-value
           map-options
           :disable="!formulario.empresa"
-        />
+        /> -->
 
-        <div class="col-12 col-md-6">
-          <label class="text-subtitle2">Fecha Inicio</label>
-          <q-date v-model="formulario.fecha_inicio" filled class="q-mb-md" />
+  <div class="col-12 col-md-6">
+          <q-input
+            outlined
+            rounded
+            dense
+            v-model="formulario.fecha_inicio"
+            label="Fecha Inicio"
+          >
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer" @click="$refs.dateInicio.show()" />
+            </template>
+            <q-popup-proxy ref="dateInicio" transition-show="scale" transition-hide="scale">
+              <q-date v-model="formulario.fecha_inicio" mask="YYYY-MM-DD" />
+            </q-popup-proxy>
+          </q-input>
         </div>
 
         <div class="col-12 col-md-6">
-          <label class="text-subtitle2">Fecha Fin</label>
-          <q-date v-model="formulario.fecha_fin" filled class="q-mb-md" />
+          <q-input
+            outlined
+            rounded
+            dense
+            v-model="formulario.fecha_fin"
+            label="Fecha Fin"
+          >
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer" @click="$refs.dateFin.show()" />
+            </template>
+            <q-popup-proxy ref="dateFin" transition-show="scale" transition-hide="scale">
+              <q-date v-model="formulario.fecha_fin" mask="YYYY-MM-DD" />
+            </q-popup-proxy>
+          </q-input>
+        </div>
+
+        <!-- Horas -->
+        <div class="col-12 col-md-6">
+          <q-input
+            outlined
+            rounded
+            dense
+            v-model="formulario.hora_inicio"
+            label="Hora Inicio"
+          >
+            <template v-slot:append>
+              <q-icon name="schedule" class="cursor-pointer" @click="$refs.horaInicio.show()" />
+            </template>
+            <q-popup-proxy ref="horaInicio" transition-show="scale" transition-hide="scale">
+              <q-time v-model="formulario.hora_inicio" format24h />
+            </q-popup-proxy>
+          </q-input>
         </div>
 
         <div class="col-12 col-md-6">
-          <label class="text-subtitle2">Hora Inicio</label>
-          <q-time v-model="formulario.hora_inicio" filled class="q-mb-md" />
-        </div>
-
-        <div class="col-12 col-md-6">
-          <label class="text-subtitle2">Hora Fin</label>
-          <q-time v-model="formulario.hora_fin" filled class="q-mb-md" />
+          <q-input
+            outlined
+            rounded
+            dense
+            v-model="formulario.hora_fin"
+            label="Hora Fin"
+          >
+            <template v-slot:append>
+              <q-icon name="schedule" class="cursor-pointer" @click="$refs.horaFin.show()" />
+            </template>
+            <q-popup-proxy ref="horaFin" transition-show="scale" transition-hide="scale">
+              <q-time v-model="formulario.hora_fin" format24h />
+            </q-popup-proxy>
+          </q-input>
         </div>
 
         <q-input
           class="col-12"
-          filled
+          outlined
+          rounded
           type="textarea"
           v-model="formulario.detalles_cronograma"
           label="Detalles del Cronograma"
           autogrow
         />
 
-        <!-- <q-input
-          v-if="perfilUsuario.toLowerCase() !== 'cliente'"
-          class="col-12 col-md-6"
-          filled
-          type="number"
-          v-model="formulario.peso_maximo"
-          label="Peso Bruto Máximo (KG)"
-        /> -->
-
         <q-select
           class="col-12 col-md-6"
-          filled
+          outlined
+          rounded
+          dense
           v-model="formulario.departamento"
           use-input
           input-debounce="0"
@@ -118,7 +165,9 @@
 
         <q-select
           class="col-12 col-md-6"
-          filled
+          outlined
+          rounded
+          dense
           v-model="formulario.municipio"
           use-input
           input-debounce="0"
@@ -135,7 +184,9 @@
         <q-select
           v-if="perfilUsuario.toLowerCase() !== 'cliente'"
           class="col-12 col-md-6"
-          filled
+          outlined
+          rounded
+          dense
           v-model="formulario.tipodecontactovisualconlaua"
           label="Tipo de Contacto Visual con la UA"
           :options="contactovisualOptions"
@@ -144,7 +195,9 @@
         <q-select
           v-if="perfilUsuario.toLowerCase() !== 'cliente'"
           class="col-12 col-md-6"
-          filled
+          outlined
+          rounded
+          dense
           v-model="formulario.vueloespecial"
           label="Tipo de Vuelo Especial"
           :options="vueloespecialOptions"
@@ -153,7 +206,9 @@
         <q-input
           v-if="perfilUsuario.toLowerCase() !== 'cliente'"
           class="col-12 col-md-6"
-          filled
+          outlined
+          rounded
+          dense
           v-model="formulario.justificacionvueloespecial"
           label="Justificación del Vuelo Especial"
         />
@@ -161,7 +216,9 @@
         <q-select
           v-if="perfilUsuario.toLowerCase() !== 'cliente'"
           class="col-12 col-md-6"
-          filled
+          outlined
+          rounded
+          dense
           v-model="formulario.tipoOperacion"
           :options="opcionesOperacion"
           label="Tipo de Operación"
@@ -176,8 +233,8 @@
         <div v-if="formulario.tipoOperacion === 'poligono'" class="col-12">
           <q-banner class="bg-grey-1 q-mb-sm">Operación por Polígono</q-banner>
 
-          <q-input filled v-model="formulario.poligononombre" label="Nombre del Polígono" />
-          <q-input filled v-model="formulario.altura_poligono" label="Altura solicitada (metros)" />
+          <q-input outlined rounded v-model="formulario.poligononombre" label="Nombre del Polígono" />
+          <q-input outlined rounded v-model="formulario.altura_poligono" label="Altura solicitada (metros)" />
 
           <q-table
             flat bordered
@@ -212,8 +269,8 @@
         <div v-if="formulario.tipoOperacion === 'tramo'" class="col-12">
           <q-banner class="bg-grey-1 q-mb-sm">Operación por Tramo Lineal</q-banner>
 
-          <q-input filled v-model="formulario.tramolinealnombre" label="Nombre del Tramo" />
-          <q-input filled v-model="formulario.altura_tramo" label="Altura en metros" />
+          <q-input outlined rounded v-model="formulario.tramolinealnombre" label="Nombre del Tramo" />
+          <q-input outlined rounded v-model="formulario.altura_tramo" label="Altura en metros" />
 
           <q-table
             flat bordered
@@ -246,8 +303,8 @@
         <div v-if="formulario.tipoOperacion === 'circunferencia'" class="col-12">
           <q-banner class="bg-grey-1 q-mb-sm">Operación por Circunferencia</q-banner>
 
-          <q-input filled v-model="formulario.circuferenciaencoordenadayradionombre" label="Nombre de la Circunferencia" />
-          <q-input filled v-model="formulario.altura_circunferencia" label="Altura solicitada (metros)" />
+          <q-input outlined rounded v-model="formulario.circuferenciaencoordenadayradionombre" label="Nombre de la Circunferencia" />
+          <q-input outlined rounded v-model="formulario.altura_circunferencia" label="Altura solicitada (metros)" />
 
           <q-table
             flat bordered
@@ -310,7 +367,7 @@
       <q-card-actions align="right">
         <q-btn
           @click="guardar"
-          color="red"
+          color="accent"
           class="text-white"
           :loading="useSolicitud.loading"
         >
@@ -516,22 +573,22 @@ const filterclientes = (val, update) => {
   update()
 }
 
-const filtersucursales = (val, update) => {
-  if (!formulario.value.empresa) return
+// const filtersucursales = (val, update) => {
+//   if (!formulario.value.empresa) return
 
-  if (val === '') {
-    sucursalOptions.value = clientesSucursales[formulario.value.empresa].map((mun) => ({
-      name: mun,
-      value: mun,
-    }))
-  } else {
-    const needle = val.toLowerCase()
-    sucursalOptions.value = clientesSucursales[formulario.value.empresa]
-      .filter((v) => v.toLowerCase().indexOf(needle) > -1)
-      .map((mun) => ({ name: mun, value: mun }))
-  }
-  update()
-}
+//   if (val === '') {
+//     sucursalOptions.value = clientesSucursales[formulario.value.empresa].map((mun) => ({
+//       name: mun,
+//       value: mun,
+//     }))
+//   } else {
+//     const needle = val.toLowerCase()
+//     sucursalOptions.value = clientesSucursales[formulario.value.empresa]
+//       .filter((v) => v.toLowerCase().indexOf(needle) > -1)
+//       .map((mun) => ({ name: mun, value: mun }))
+//   }
+//   update()
+// }
 
 prepararClientes()
 

@@ -1,8 +1,8 @@
 {
-  "name": "quasar-project",
+  "name": "sva",
   "version": "0.0.1",
-  "description": " A Quasar framework app",
-  "productName": "Quasar App",
+  "description": "SVA APP",
+  "productName": "SVA",
   "author": "(Diego Cardenas <cardenasdiegom6@gmail.com>)",
   "type": "module",
   "private": true,
